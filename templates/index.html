@@ -1,20 +1,64 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>projectCatalyst</title>
-</head>
-<body>
-    <h1>projectCatalyst</h1>
-    <p>Managemnent System Catalyst</p>
+{% extends 'base.html' %}
+{% block title %}projectCatalyst{% endblock %}
 
-    <nav>
-        <a href="/products">Produk</a> |
-        <a href="/orders">Order</a> |
-        <a href="/cashflow">Cashflow</a> |
-        <a href="/reports">Laporan</a> |
-        <a href="/ingredients">Bahan Baku</a>
-    </nav>
-</body>
-</html>
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 text-center">
+        <h1 class="mb-2">projectCatalyst</h1>
+        <p class="text-muted mb-5">Management System Catalyst</p>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="/products" class="text-decoration-none">
+                    <div class="card h-100 p-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Produk</h5>
+                            <p class="card-text text-muted">Kelola daftar produk kue</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="/orders" class="text-decoration-none">
+                    <div class="card h-100 p-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Orders</h5>
+                            <p class="card-text text-muted">Kelola pesanan customer</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="/cashflow" class="text-decoration-none">
+                    <div class="card h-100 p-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Keuangan</h5>
+                            <p class="card-text text-muted">Catat pemasukan & pengeluaran</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="/ingredients" class="text-decoration-none">
+                    <div class="card h-100 p-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Bahan Baku</h5>
+                            <p class="card-text text-muted">Tracker harga bahan baku</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="/reports" class="text-decoration-none">
+                    <div class="card h-100 p-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Laporan</h5>
+                            <p class="card-text text-muted">Ringkasan & grafik penjualan</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

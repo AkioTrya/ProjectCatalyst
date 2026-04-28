@@ -265,3 +265,44 @@ def add_ingredient_price(ingredient_id, price, date, notes):
     conn.commit()
     conn.close()
 
+def add_payment(order_id, amount, payment_method, payment_type, notes):
+    conn = get_connection()
+    conn.execute("""
+        INSERT INTO payments (order_id, amount, payment_method, payment_type, notes)
+        VALUES (?, ?, ?, ?, ?)
+    """, (order_id, amount, payment_method, payment_type, notes))
+    
+    # Cek total payment vs total order
+    total_order = conn.execute("""
+        SELECT SUM(quantity * price) as total
+        FROM order_items WHERE order_id = ?
+    """, (order_id,)).fetchone()['total']
+    
+    total_paid = conn.execute("""
+        SELECT SUM(amount) as total
+        FROM payments WHERE order_id = ?
+    """, (order_id,)).fetchone()['total']
+    
+    # Auto update payment status
+    if total_paid >= total_order:
+        conn.execute(
+            "UPDATE orders SET payment_status = 'paid' WHERE id = ?",
+            (order_id,)
+        )
+    else:
+        conn.execute(
+            "UPDATE orders SET payment_status = 'dp' WHERE id = ?",
+            (order_id,)
+        )
+    
+    conn.commit()
+    conn.close()
+
+def get_payments_by_order(order_id):
+    conn = get_connection()
+    payments = conn.execute("""
+        SELECT * FROM payments WHERE order_id = ?
+        ORDER BY paid_at ASC
+    """, (order_id,)).fetchall()
+    conn.close()
+    return payments

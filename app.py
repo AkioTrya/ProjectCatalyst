@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_top_products, get_monthly_summary, get_all_ingredients, add_ingredient, add_ingredient_price, get_ingredient_price_history, get_ingredient_prices_for_chart
+from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_top_products, get_monthly_summary, get_all_ingredients, add_ingredient, add_ingredient_price, get_ingredient_price_history, get_ingredient_prices_for_chart, add_payment, get_payments_by_order
 app = Flask(__name__)
 
 @app.route('/')
@@ -31,7 +31,7 @@ def add_order_route():
     customer_phone = request.form['customer_phone']
     order_date = request.form['order_date']
     pickup_date = request.form['pickup_date']
-    payment_method = request.form['payment_method']
+    payment_method = 'pending'
     notes = request.form['notes']
     
     product_ids = request.form.getlist('product_id[]')
@@ -136,6 +136,15 @@ def add_ingredient_price_route():
     notes = request.form['notes']
     add_ingredient_price(int(ingredient_id), float(price), date, notes)
     return redirect(url_for('ingredients'))
+
+@app.route('/orders/payment/<int:order_id>', methods=['POST'])
+def add_payment_route(order_id):
+    amount = request.form['amount']
+    payment_method = request.form['payment_method']
+    payment_type = request.form['payment_type']
+    notes = request.form['notes']
+    add_payment(order_id, float(amount), payment_method, payment_type, notes)
+    return redirect(url_for('orders'))
 
 if __name__ == '__main__':
     init_db()

@@ -1,140 +1,154 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bahan Baku — projectCatalyst</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-</head>
-<body>
-    <h1>Tracker Bahan Baku</h1>
-    <a href="/">← Kembali</a>
+{% extends 'base.html' %}
+{% block title %}Bahan Baku — projectCatalyst{% endblock %}
 
-    <hr>
+{% block content %}
+<h1 class="mb-4">Tracker Bahan Baku</h1>
 
-    <h2>Tambah Bahan Baku</h2>
-    <form action="/ingredients/add" method="POST">
-        <label>Nama Bahan</label><br>
-        <input type="text" name="name" required><br><br>
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">Tambah Bahan Baku</div>
+            <div class="card-body">
+                <form action="/ingredients/add" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Bahan</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Satuan</label>
+                        <input type="text" name="unit" class="form-control" placeholder="kg / liter / pcs" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Tambah</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-        <label>Satuan</label><br>
-        <input type="text" name="unit" placeholder="kg / liter / pcs" required><br><br>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">Catat Harga Bahan</div>
+            <div class="card-body">
+                <form action="/ingredients/price/add" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Bahan Baku</label>
+                        <select name="ingredient_id" class="form-select" required>
+                            <option value="">-- Pilih Bahan --</option>
+                            {% for ingredient in ingredients %}
+                            <option value="{{ ingredient['id'] }}">
+                                {{ ingredient['name'] }} ({{ ingredient['unit'] }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Harga</label>
+                        <input type="number" name="price" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tanggal</label>
+                        <input type="date" name="date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Catatan (opsional)</label>
+                        <input type="text" name="notes" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Simpan Harga</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <button type="submit">Tambah</button>
-    </form>
+<hr>
 
-    <hr>
+<h2 class="mb-3">Grafik Harga Bahan Baku</h2>
+{% if chart_data %}
+<div class="card p-3 mb-4">
+    <canvas id="ingredientChart"></canvas>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+    const chartData = {{ chart_data | tojson }};
 
-    <h2>Catat Harga Bahan</h2>
-    <form action="/ingredients/price/add" method="POST">
-        <label>Bahan Baku</label><br>
-        <select name="ingredient_id" required>
-            <option value="">-- Pilih Bahan --</option>
-            {% for ingredient in ingredients %}
-            <option value="{{ ingredient['id'] }}">
-                {{ ingredient['name'] }} ({{ ingredient['unit'] }})
-            </option>
-            {% endfor %}
-        </select><br><br>
+    const colors = [
+        'rgb(255, 99, 132)',
+        'rgb(54, 162, 235)',
+        'rgb(255, 205, 86)',
+        'rgb(75, 192, 192)',
+        'rgb(153, 102, 255)',
+        'rgb(255, 159, 64)'
+    ];
 
-        <label>Harga per {{ '...' }}</label><br>
-        <input type="number" name="price" required><br><br>
+    const allDates = [...new Set(chartData.flatMap(d => d.dates))].sort();
 
-        <label>Tanggal</label><br>
-        <input type="date" name="date" required><br><br>
+    const datasets = chartData.map((ingredient, i) => ({
+        label: ingredient.name,
+        data: allDates.map(date => {
+            const idx = ingredient.dates.indexOf(date);
+            return idx !== -1 ? ingredient.prices[idx] : null;
+        }),
+        borderColor: colors[i % colors.length],
+        backgroundColor: colors[i % colors.length],
+        tension: 0.3,
+        spanGaps: true
+    }));
 
-        <label>Catatan (opsional)</label><br>
-        <input type="text" name="notes"><br><br>
-
-        <button type="submit">Simpan Harga</button>
-    </form>
-
-    <hr>
-
-    <h2>Grafik Harga Bahan Baku</h2>
-    {% if chart_data %}
-    <canvas id="ingredientChart" width="700" height="350"></canvas>
-    <script>
-        const chartData = {{ chart_data | tojson }};
-        
-        const colors = [
-            'rgb(255, 99, 132)',
-            'rgb(54, 162, 235)',
-            'rgb(255, 205, 86)',
-            'rgb(75, 192, 192)',
-            'rgb(153, 102, 255)',
-            'rgb(255, 159, 64)'
-        ];
-
-        const allDates = [...new Set(chartData.flatMap(d => d.dates))].sort();
-
-        const datasets = chartData.map((ingredient, i) => ({
-            label: ingredient.name,
-            data: allDates.map(date => {
-                const idx = ingredient.dates.indexOf(date);
-                return idx !== -1 ? ingredient.prices[idx] : null;
-            }),
-            borderColor: colors[i % colors.length],
-            backgroundColor: colors[i % colors.length],
-            tension: 0.1,
-            spanGaps: true
-        }));
-
-        new Chart(document.getElementById('ingredientChart'), {
-            type: 'line',
-            data: {
-                labels: allDates,
-                datasets: datasets
+    new Chart(document.getElementById('ingredientChart'), {
+        type: 'line',
+        data: {
+            labels: allDates,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
             },
-            options: {
-                responsive: false,
-                plugins: {
-                    legend: { position: 'top' }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        ticks: {
-                            callback: value => 'Rp ' + value.toLocaleString('id-ID')
-                        }
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: value => 'Rp ' + value.toLocaleString('id-ID')
                     }
                 }
             }
-        });
-    </script>
-    {% else %}
-    <p>Belum ada data harga. Tambahkan bahan baku dan catat harganya!</p>
-    {% endif %}
+        }
+    });
+</script>
+{% else %}
+<p class="text-muted">Belum ada data harga. Tambahkan bahan baku dan catat harganya!</p>
+{% endif %}
 
-    <hr>
+<hr>
 
-    <h2>Riwayat Harga</h2>
-    {% if history %}
-    <table border="1" cellpadding="8">
-        <thead>
-            <tr>
-                <th>Tanggal</th>
-                <th>Bahan</th>
-                <th>Harga</th>
-                <th>Satuan</th>
-                <th>Catatan</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in history %}
-            <tr>
-                <td>{{ item['date'] }}</td>
-                <td>{{ item['name'] }}</td>
-                <td>Rp {{ "{:,.0f}".format(item['price']) }}</td>
-                <td>{{ item['unit'] }}</td>
-                <td>{{ item['notes'] or '-' }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>Belum ada riwayat harga.</p>
-    {% endif %}
+<h2 class="mb-3">Riwayat Harga</h2>
+{% if history %}
+<div class="table-responsive">
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Tanggal</th>
+            <th>Bahan</th>
+            <th>Harga</th>
+            <th>Satuan</th>
+            <th>Catatan</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in history %}
+        <tr>
+            <td>{{ item['date'] }}</td>
+            <td>{{ item['name'] }}</td>
+            <td>Rp {{ "{:,.0f}".format(item['price']) }}</td>
+            <td>{{ item['unit'] }}</td>
+            <td>{{ item['notes'] or '-' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p class="text-muted">Belum ada riwayat harga.</p>
+{% endif %}
 
-</body>
-</html>
+{% endblock %}

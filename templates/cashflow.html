@@ -1,66 +1,67 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cashflow — projectCatalyst</title>
-</head>
-<body>
-    <h1>Cashflow</h1>
-    <a href="/">← Kembali</a>
+{% extends 'base.html' %}
+{% block title %}Cashflow — projectCatalyst{% endblock %}
 
-    <hr>
+{% block content %}
+<h1 class="mb-4">Cashflow</h1>
 
-    <h2>Catat Pengeluaran</h2>
-    <form action="/cashflow/add" method="POST">
-        <label>Kategori</label><br>
-        <select name="category" required>
-            <option value="">-- Pilih --</option>
-            <option value="bahan_baku">Bahan Baku</option>
-            <option value="packaging">Packaging</option>
-            <option value="operasional">Operasional</option>
-            <option value="lainnya">Lainnya</option>
-        </select><br><br>
+<div class="card mb-4">
+    <div class="card-header">Catat Pengeluaran</div>
+    <div class="card-body">
+        <form action="/cashflow/add" method="POST">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Kategori</label>
+                    <select name="category" class="form-select" required>
+                        <option value="">-- Pilih --</option>
+                        <option value="bahan_baku">Bahan Baku</option>
+                        <option value="packaging">Packaging</option>
+                        <option value="operasional">Operasional</option>
+                        <option value="lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Deskripsi</label>
+                    <input type="text" name="description" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Nominal</label>
+                    <input type="number" name="amount" class="form-control" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" name="date" class="form-control" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Simpan</button>
+        </form>
+    </div>
+</div>
 
-        <label>Deskripsi</label><br>
-        <input type="text" name="description" required><br><br>
-
-        <label>Nominal</label><br>
-        <input type="number" name="amount" required><br><br>
-
-        <label>Tanggal</label><br>
-        <input type="date" name="date" required><br><br>
-
-        <button type="submit">Simpan</button>
-    </form>
-
-    <hr>
-
-    <h2>Riwayat Pengeluaran</h2>
-    {% if expenses %}
-    <table border="1" cellpadding="8">
-        <thead>
-            <tr>
-                <th>Tanggal</th>
-                <th>Kategori</th>
-                <th>Deskripsi</th>
-                <th>Nominal</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for expense in expenses %}
-            <tr>
-                <td>{{ expense['date'] }}</td>
-                <td>{{ expense['category'] }}</td>
-                <td>{{ expense['description'] }}</td>
-                <td>Rp {{ "{:,.0f}".format(expense['amount']) }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>Belum ada pengeluaran.</p>
-    {% endif %}
-
-</body>
-</html>
+<h2 class="mb-3">Riwayat Pengeluaran</h2>
+{% if expenses %}
+<div class="table-responsive">
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Tanggal</th>
+            <th>Kategori</th>
+            <th>Deskripsi</th>
+            <th>Nominal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for expense in expenses %}
+        <tr>
+            <td>{{ expense['date'] }}</td>
+            <td>{{ expense['category'] }}</td>
+            <td>{{ expense['description'] }}</td>
+            <td>Rp {{ "{:,.0f}".format(expense['amount']) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p class="text-muted">Belum ada pengeluaran.</p>
+{% endif %}
+{% endblock %}
