@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders — projectCatalyst</title>
+</head>
+<body>
+    <h1>Orders</h1>
+    <a href="/">← Kembali</a>
+
+    <hr>
+
+    <h2>Tambah Order</h2>
+    <form action="/orders/add" method="POST">
+        <label>Nama Customer</label><br>
+        <input type="text" name="customer_name" required><br><br>
+
+        <label>Nomor HP</label><br>
+        <input type="text" name="customer_phone"><br><br>
+
+        <label>Tanggal Order</label><br>
+        <input type="date" name="order_date" required><br><br>
+
+        <label>Tanggal Ambil</label><br>
+        <input type="date" name="pickup_date"><br><br>
+
+        <label>Metode Pembayaran</label><br>
+        <select name="payment_method" required>
+            <option value="">-- Pilih --</option>
+            <option value="cash">Cash</option>
+            <option value="transfer">Transfer</option>
+        </select><br><br>
+
+        <label>Catatan</label><br>
+        <textarea name="notes" rows="3" cols="40"></textarea><br><br>
+
+        <hr>
+        <h3>Item Pesanan</h3>
+
+        <div id="items-container">
+            <div class="item-row">
+                <select name="product_id[]" required>
+                    <option value="">-- Pilih Produk --</option>
+                    {% for product in products %}
+                    <option value="{{ product['id'] }}">
+                        {{ product['name'] }} — Rp {{ "{:,.0f}".format(product['price']) }}/{{ product['unit'] }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <input type="number" name="quantity[]" placeholder="Qty" min="1" required style="width:60px">
+            </div>
+        </div>
+
+        <br>
+        <button type="button" onclick="addItem()">+ Tambah Item</button>
+        <br><br>
+
+        <button type="submit">Simpan Order</button>
+    </form>
+
+    <hr>
+
+    <h2>Daftar Order</h2>
+    {% if orders %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>HP</th>
+                <th>Tanggal Order</th>
+                <th>Tanggal Ambil</th>
+                <th>Total Item</th>
+                <th>Total Harga</th>
+                <th>Status</th>
+                <th>Pembayaran</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order['customer_name'] }}</td>
+                <td>{{ order['customer_phone'] }}</td>
+                <td>{{ order['order_date'] }}</td>
+                <td>{{ order['pickup_date'] or '-' }}</td>
+                <td>{{ order['total_items'] }}</td>
+                <td>Rp {{ "{:,.0f}".format(order['total_harga'] or 0) }}</td>
+                <td>{{ order['status'] }}</td>
+                <td>{{ order['payment_method'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Belum ada order.</p>
+    {% endif %}
+
+<script>
+function addItem() {
+    const container = document.getElementById('items-container');
+    const firstRow = container.querySelector('.item-row');
+    const newRow = firstRow.cloneNode(true);
+    
+    newRow.querySelector('select').value = '';
+    newRow.querySelector('input').value = '';
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '✕ Hapus';
+    removeBtn.onclick = function() { newRow.remove(); };
+    newRow.appendChild(removeBtn);
+    
+    container.appendChild(newRow);
+}
+</script>
+
+</body>
+</html>

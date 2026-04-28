@@ -36,3 +36,37 @@ def add_product(name, price, unit):
     )
     conn.commit()
     conn.close()
+
+def get_all_orders():
+    conn = get_connection()
+    orders = conn.execute("""
+        SELECT o.*, 
+               COUNT(oi.id) as total_items,
+               SUM(oi.quantity * oi.price) as total_harga
+        FROM orders o
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        GROUP BY o.id
+        ORDER BY o.created_at DESC
+    """).fetchall()
+    conn.close()
+    return orders
+
+def add_order(customer_name, customer_phone, order_date, pickup_date, payment_method, notes, items):
+    conn = get_connection()
+    cursor = conn.execute("""
+        INSERT INTO orders 
+        (customer_name, customer_phone, order_date, pickup_date, payment_method, notes)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (customer_name, customer_phone, order_date, pickup_date, payment_method, notes))
+    
+    order_id = cursor.lastrowid
+    
+    for item in items:
+        conn.execute("""
+            INSERT INTO order_items (order_id, product_id, quantity, price)
+            VALUES (?, ?, ?, ?)
+        """, (order_id, item['product_id'], item['quantity'], item['price']))
+    
+    conn.commit()
+    conn.close()
+    return order_id
