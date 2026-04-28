@@ -8,6 +8,7 @@
 <body>
     <h1>Daftar Produk</h1>
     <a href="/">← Kembali</a>
+    <a href="/products/manage">Kelola Produk</a>
 
     <hr>
 
@@ -35,6 +36,7 @@
                 <th>Nama</th>
                 <th>Harga</th>
                 <th>Satuan</th>
+                <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -43,6 +45,12 @@
                 <td>{{ product['name'] }}</td>
                 <td>Rp {{ "{:,.0f}".format(product['price']) }}</td>
                 <td>{{ product['unit'] }}</td>
+                <td>
+                    <form action="/products/delete/{{ product['id'] }}" method="POST"
+                            onsubmit="return confirm('Nonaktifkan produk ini?')">
+                        <button type="submit">Nonaktifkan</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

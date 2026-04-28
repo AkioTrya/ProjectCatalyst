@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Produk — projectCatalyst</title>
+</head>
+<body>
+    <h1>Kelola Produk</h1>
+    <a href="/products">← Kembali ke Produk</a>
+
+    <hr>
+
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Harga</th>
+                <th>Satuan</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product['name'] }}</td>
+                <td>Rp {{ "{:,.0f}".format(product['price']) }}</td>
+                <td>{{ product['unit'] }}</td>
+                <td>{{ 'Aktif' if product['is_active'] == 1 else 'Nonaktif' }}</td>
+                <td>
+                    {% if product['is_active'] == 1 %}
+                    <form action="/products/deactivate/{{ product['id'] }}" method="POST"
+                          onsubmit="return confirm('Nonaktifkan produk ini?')">
+                        <button type="submit">Nonaktifkan</button>
+                    </form>
+                    {% else %}
+                    <form action="/products/activate/{{ product['id'] }}" method="POST"
+                          onsubmit="return confirm('Aktifkan produk ini?')">
+                        <button type="submit">Aktifkan</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

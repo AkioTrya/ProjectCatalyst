@@ -77,3 +77,29 @@ def delete_order(order_id):
     conn.execute("DELETE FROM orders WHERE id = ?", (order_id,))
     conn.commit()
     conn.close()
+
+def deactivate_product(product_id):
+    conn = get_connection()
+    conn.execute(
+        "UPDATE products SET is_active = 0 WHERE id = ?",
+        (product_id,)
+    )
+    conn.commit()
+    conn.close()
+
+def get_all_products_including_inactive():
+    conn = get_connection()
+    products = conn.execute(
+        "SELECT * FROM products ORDER BY is_active DESC, name"
+    ).fetchall()
+    conn.close()
+    return products
+
+def activate_product(product_id):
+    conn = get_connection()
+    conn.execute(
+        "UPDATE products SET is_active = 1 WHERE id = ?",
+        (product_id,)
+    )
+    conn.commit()
+    conn.close()

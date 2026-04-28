@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order
+from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive
 
 app = Flask(__name__)
 
@@ -55,6 +55,26 @@ def add_order_route():
 def delete_order_route(order_id):
     delete_order(order_id)
     return redirect(url_for('orders'))
+
+@app.route('/products/delete/<int:product_id>', methods=['POST'])
+def deactivate_product_route(product_id):
+    deactivate_product(product_id)
+    return redirect(url_for('products'))
+
+@app.route('/products/manage')
+def manage_products():
+    all_products = get_all_products_including_inactive()
+    return render_template('manage_products.html', products=all_products)
+
+@app.route('/products/activate/<int:product_id>', methods=['POST'])
+def activate_product_route(product_id):
+    activate_product(product_id)
+    return redirect(url_for('manage_products'))
+
+@app.route('/products/deactivate/<int:product_id>', methods=['POST'])
+def deactivate_product_route_manage(product_id):
+    deactivate_product(product_id)
+    return redirect(url_for('manage_products'))
 
 if __name__ == '__main__':
     init_db()
