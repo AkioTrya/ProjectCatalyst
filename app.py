@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status
+from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_monthly_summary, get_top_products
 
 app = Flask(__name__)
 
@@ -95,6 +95,21 @@ def update_order_status_route(order_id):
     status = request.form['status']
     update_order_status(order_id, status)
     return redirect(url_for('orders'))
+
+@app.route('/reports')
+def reports():
+    from datetime import date
+    today = date.today().isoformat()
+    daily_orders, daily_expenses = get_daily_summary(today)
+    top_products = get_top_products()
+    monthly = get_monthly_summary()
+    return render_template('reports.html',
+        daily_orders=daily_orders,
+        daily_expenses=daily_expenses,
+        top_products=top_products,
+        monthly=monthly,
+        today=today
+    )
 
 if __name__ == '__main__':
     init_db()

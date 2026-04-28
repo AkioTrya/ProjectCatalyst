@@ -129,3 +129,56 @@ def update_order_status(order_id, status):
     )
     conn.commit()
     conn.close()
+
+def get_daily_summary(date):
+    conn = get_connection()
+    
+    total_orders = conn.execute("""
+        SELECT COUNT(*) as total_orders,
+               SUM(oi.quantity * oi.price) as total_penjualan
+        FROM orders o
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        WHERE o.order_date = ? AND o.status != 'cancelled'
+    """, (date,)).fetchone()
+    
+    total_expenses = conn.execute("""
+        SELECT SUM(amount) as total_pengeluaran
+        FROM expenses
+        WHERE date = ?
+    """, (date,)).fetchone()
+    
+    conn.close()
+    return total_orders, total_expenses
+
+def get_top_products():
+    conn = get_connection()
+    products = conn.execute("""
+        SELECT p.name,
+               SUM(oi.quantity) as total_terjual,
+               SUM(oi.quantity * oi.price) as total_pendapatan
+        FROM order_items oi
+        JOIN products p ON oi.product_id = p.id
+        JOIN orders o ON oi.order_id = o.id
+        WHERE o.status != 'cancelled'
+        GROUP BY p.id
+        ORDER BY total_terjual DESC
+        LIMIT 5
+    """).fetchall()
+    conn.close()
+    return products
+
+def get_monthly_summary():
+    conn = get_connection()
+    summary = conn.execute("""
+        SELECT o.order_date,
+               COUNT(DISTINCT o.id) as total_order,
+               SUM(oi.quantity * oi.price) as total_penjualan
+        FROM orders o
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        WHERE o.status != 'cancelled'
+        AND o.order_date >= DATE('now', '-30 days')
+        GROUP BY o.order_date
+        ORDER BY o.order_date ASC
+    """).fetchall()
+    conn.close()
+    return summary
