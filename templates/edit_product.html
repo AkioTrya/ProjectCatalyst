@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Edit Produk — projectCatalyst{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Edit Produk</h1>
+    <a href="/products" class="btn btn-outline-secondary">← Kembali</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form action="/products/edit/{{ product['id'] }}" method="POST">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Nama Produk</label>
+                    <input type="text" name="name" class="form-control" 
+                           value="{{ product['name'] }}" required>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Harga</label>
+                    <input type="number" name="price" class="form-control" 
+                           value="{{ product['price'] }}" required>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Satuan</label>
+                    <input type="text" name="unit" class="form-control" 
+                           value="{{ product['unit'] }}" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3 w-100 w-md-auto">Simpan Perubahan</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

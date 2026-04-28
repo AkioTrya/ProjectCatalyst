@@ -35,14 +35,15 @@
                 {% if product['is_active'] == 1 %}
                 <form action="/products/deactivate/{{ product['id'] }}" method="POST"
                       onsubmit="return confirm('Nonaktifkan produk ini?')">
-                    <button type="submit" class="btn btn-warning btn-sm">Nonaktifkan</button>
+                    <button type="submit" class="btn btn-warning btn-sm w-100">Nonaktifkan</button>
                 </form>
                 {% else %}
                 <form action="/products/activate/{{ product['id'] }}" method="POST"
                       onsubmit="return confirm('Aktifkan produk ini?')">
-                    <button type="submit" class="btn btn-success btn-sm">Aktifkan</button>
+                    <button type="submit" class="btn btn-success btn-sm w-100">Aktifkan</button>
                 </form>
                 {% endif %}
+                <a href="/products/edit/{{ product['id'] }}" class="btn btn-info btn-sm w-100 mt-1">Edit</a>
             </td>
         </tr>
         {% endfor %}

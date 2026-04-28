@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Edit Order — projectCatalyst{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Edit Order</h1>
+    <a href="/orders" class="btn btn-outline-secondary">← Kembali</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form action="/orders/edit/{{ order['id'] }}" method="POST">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Nama Customer</label>
+                    <input type="text" name="customer_name" class="form-control"
+                           value="{{ order['customer_name'] }}" required>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Nomor HP</label>
+                    <input type="text" name="customer_phone" class="form-control"
+                           value="{{ order['customer_phone'] or '' }}">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Tanggal Order</label>
+                    <input type="date" name="order_date" class="form-control"
+                           value="{{ order['order_date'] }}" required>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Tanggal Ambil</label>
+                    <input type="date" name="pickup_date" class="form-control"
+                           value="{{ order['pickup_date'] or '' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Catatan</label>
+                    <textarea name="notes" class="form-control" rows="2">{{ order['notes'] or '' }}</textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3 w-100 w-md-auto">Simpan Perubahan</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -306,3 +306,41 @@ def get_payments_by_order(order_id):
     """, (order_id,)).fetchall()
     conn.close()
     return payments
+
+def get_product_by_id(product_id):
+    conn = get_connection()
+    product = conn.execute(
+        "SELECT * FROM products WHERE id = ?",
+        (product_id,)
+    ).fetchone()
+    conn.close()
+    return product
+
+def update_product(product_id, name, price, unit):
+    conn = get_connection()
+    conn.execute(
+        "UPDATE products SET name = ?, price = ?, unit = ? WHERE id = ?",
+        (name, price, unit, product_id)
+    )
+    conn.commit()
+    conn.close()
+
+def get_order_by_id(order_id):
+    conn = get_connection()
+    order = conn.execute(
+        "SELECT * FROM orders WHERE id = ?",
+        (order_id,)
+    ).fetchone()
+    conn.close()
+    return order
+
+def update_order(order_id, customer_name, customer_phone, order_date, pickup_date, notes):
+    conn = get_connection()
+    conn.execute("""
+        UPDATE orders 
+        SET customer_name = ?, customer_phone = ?, 
+            order_date = ?, pickup_date = ?, notes = ?
+        WHERE id = ?
+    """, (customer_name, customer_phone, order_date, pickup_date, notes, order_id))
+    conn.commit()
+    conn.close()

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_top_products, get_monthly_summary, get_all_ingredients, add_ingredient, add_ingredient_price, get_ingredient_price_history, get_ingredient_prices_for_chart, add_payment, get_payments_by_order
+from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_top_products, get_monthly_summary, get_all_ingredients, add_ingredient, add_ingredient_price, get_ingredient_price_history, get_ingredient_prices_for_chart, add_payment, get_payments_by_order, get_product_by_id, update_product, get_order_by_id, update_order
 app = Flask(__name__)
 
 @app.route('/')
@@ -144,6 +144,34 @@ def add_payment_route(order_id):
     payment_type = request.form['payment_type']
     notes = request.form['notes']
     add_payment(order_id, float(amount), payment_method, payment_type, notes)
+    return redirect(url_for('orders'))
+
+@app.route('/products/edit/<int:product_id>')
+def edit_product_page(product_id):
+    product = get_product_by_id(product_id)
+    return render_template('edit_product.html', product=product)
+
+@app.route('/products/edit/<int:product_id>', methods=['POST'])
+def edit_product_route(product_id):
+    name = request.form['name']
+    price = request.form['price']
+    unit = request.form['unit']
+    update_product(product_id, name, float(price), unit)
+    return redirect(url_for('products'))
+
+@app.route('/orders/edit/<int:order_id>')
+def edit_order_page(order_id):
+    order = get_order_by_id(order_id)
+    return render_template('edit_order.html', order=order)
+
+@app.route('/orders/edit/<int:order_id>', methods=['POST'])
+def edit_order_route(order_id):
+    customer_name = request.form['customer_name']
+    customer_phone = request.form['customer_phone']
+    order_date = request.form['order_date']
+    pickup_date = request.form['pickup_date']
+    notes = request.form['notes']
+    update_order(order_id, customer_name, customer_phone, order_date, pickup_date, notes)
     return redirect(url_for('orders'))
 
 if __name__ == '__main__':

@@ -118,6 +118,7 @@
                       onsubmit="return confirm('Hapus order ini?')">
                     <button type="submit" class="btn btn-danger btn-sm w-100">Hapus</button>
                 </form>
+                <a href="/orders/edit/{{ order['id'] }}" class="btn btn-info btn-sm w-100 mt-1">Edit</a>
             </td>
         </tr>
         {% endfor %}
