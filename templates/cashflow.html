@@ -9,7 +9,7 @@
     <div class="card-body">
         <form action="/cashflow/add" method="POST">
             <div class="row g-3">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Kategori</label>
                     <select name="category" class="form-select" required>
                         <option value="">-- Pilih --</option>
@@ -19,20 +19,20 @@
                         <option value="lainnya">Lainnya</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Deskripsi</label>
                     <input type="text" name="description" class="form-control" required>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Nominal</label>
                     <input type="number" name="amount" class="form-control" required>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Tanggal</label>
                     <input type="date" name="date" class="form-control" required>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">Simpan</button>
+            <button type="submit" class="btn btn-primary mt-3 w-100 w-md-auto">Simpan</button>
         </form>
     </div>
 </div>

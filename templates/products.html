@@ -9,20 +9,20 @@
     <div class="card-body">
         <form action="/products/add" method="POST">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Nama Produk</label>
                     <input type="text" name="name" class="form-control" required>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Harga</label>
                     <input type="number" name="price" class="form-control" required>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Satuan</label>
                     <input type="text" name="unit" class="form-control" placeholder="pcs / loyang / box" required>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">Tambah Produk</button>
+            <button type="submit" class="btn btn-primary mt-3 w-100 w-md-auto">Tambah Produk</button>
         </form>
     </div>
 </div>
@@ -52,7 +52,7 @@
             <td>
                 <form action="/products/delete/{{ product['id'] }}" method="POST"
                       onsubmit="return confirm('Nonaktifkan produk ini?')">
-                    <button type="submit" class="btn btn-warning btn-sm">Nonaktifkan</button>
+                    <button type="submit" class="btn btn-warning btn-sm w-100">Nonaktifkan</button>
                 </form>
             </td>
         </tr>
