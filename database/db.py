@@ -344,3 +344,36 @@ def update_order(order_id, customer_name, customer_phone, order_date, pickup_dat
     """, (customer_name, customer_phone, order_date, pickup_date, notes, order_id))
     conn.commit()
     conn.close()
+
+def get_order_detail(order_id):
+    conn = get_connection()
+    
+    order = conn.execute(
+        "SELECT * FROM orders WHERE id = ?",
+        (order_id,)
+    ).fetchone()
+    
+    items = conn.execute("""
+        SELECT oi.*, p.name as product_name
+        FROM order_items oi
+        JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = ?
+    """, (order_id,)).fetchall()
+    
+    payments = conn.execute(
+        "SELECT * FROM payments WHERE order_id = ? ORDER BY paid_at ASC",
+        (order_id,)
+    ).fetchall()
+    
+    total_order = conn.execute("""
+        SELECT SUM(quantity * price) as total
+        FROM order_items WHERE order_id = ?
+    """, (order_id,)).fetchone()['total']
+    
+    total_paid = conn.execute("""
+        SELECT SUM(amount) as total
+        FROM payments WHERE order_id = ?
+    """, (order_id,)).fetchone()['total'] or 0
+    
+    conn.close()
+    return order, items, payments, total_order, total_paid

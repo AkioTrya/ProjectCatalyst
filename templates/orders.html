@@ -9,19 +9,19 @@
     <div class="card-body">
         <form action="/orders/add" method="POST">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Nama Customer</label>
                     <input type="text" name="customer_name" class="form-control" required>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Nomor HP</label>
                     <input type="text" name="customer_phone" class="form-control">
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Tanggal Order</label>
                     <input type="date" name="order_date" class="form-control" required>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Tanggal Ambil</label>
                     <input type="date" name="pickup_date" class="form-control">
                 </div>
@@ -35,7 +35,7 @@
             <h5>Item Pesanan</h5>
             <div id="items-container">
                 <div class="item-row row g-2 mb-2">
-                    <div class="col-md-8">
+                    <div class="col-8">
                         <select name="product_id[]" class="form-select" required>
                             <option value="">-- Pilih Produk --</option>
                             {% for product in products %}
@@ -45,7 +45,7 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-4">
                         <input type="number" name="quantity[]" class="form-control" placeholder="Qty" min="1" required>
                     </div>
                 </div>
@@ -53,7 +53,7 @@
 
             <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="addItem()">+ Tambah Item</button>
             <br>
-            <button type="submit" class="btn btn-primary">Simpan Order</button>
+            <button type="submit" class="btn btn-primary w-100 w-md-auto">Simpan Order</button>
         </form>
     </div>
 </div>
@@ -65,14 +65,11 @@
     <thead class="table-dark">
         <tr>
             <th>Customer</th>
-            <th>HP</th>
             <th>Tanggal Order</th>
             <th>Tanggal Ambil</th>
-            <th>Total Item</th>
-            <th>Total Harga</th>
+            <th>Total</th>
             <th>Status</th>
-            <th>Payment Status</th>
-            <th>Catat Pembayaran</th>
+            <th>Bayar</th>
             <th>Aksi</th>
         </tr>
     </thead>
@@ -80,45 +77,33 @@
         {% for order in orders %}
         <tr>
             <td>{{ order['customer_name'] }}</td>
-            <td>{{ order['customer_phone'] }}</td>
             <td>{{ order['order_date'] }}</td>
             <td>{{ order['pickup_date'] or '-' }}</td>
-            <td>{{ order['total_items'] }}</td>
             <td>Rp {{ "{:,.0f}".format(order['total_harga'] or 0) }}</td>
-            <td>{{ order['status'] }}</td>
-            <td>{{ order['payment_status'] }}</td>
             <td>
-                <form action="/orders/payment/{{ order['id'] }}" method="POST">
-                    <input type="number" name="amount" placeholder="Nominal" class="form-control form-control-sm mb-1" required>
-                    <select name="payment_method" class="form-select form-select-sm mb-1">
-                        <option value="cash">Cash</option>
-                        <option value="transfer">Transfer</option>
-                    </select>
-                    <select name="payment_type" class="form-select form-select-sm mb-1">
-                        <option value="dp">DP</option>
-                        <option value="full">Full Payment</option>
-                        <option value="pelunasan">Pelunasan</option>
-                    </select>
-                    <input type="text" name="notes" placeholder="Catatan" class="form-control form-control-sm mb-1">
-                    <button type="submit" class="btn btn-success btn-sm w-100">Catat</button>
-                </form>
+                {% if order['status'] == 'completed' %}
+                <span class="badge bg-success">Completed</span>
+                {% elif order['status'] == 'confirmed' %}
+                <span class="badge bg-primary">Confirmed</span>
+                {% elif order['status'] == 'ready' %}
+                <span class="badge bg-info text-dark">Ready</span>
+                {% elif order['status'] == 'cancelled' %}
+                <span class="badge bg-danger">Cancelled</span>
+                {% else %}
+                <span class="badge bg-secondary">Pending</span>
+                {% endif %}
             </td>
             <td>
-                <form action="/orders/status/{{ order['id'] }}" method="POST" class="mb-2">
-                    <select name="status" class="form-select form-select-sm mb-1">
-                        <option value="pending" {{ 'selected' if order['status'] == 'pending' }}>Pending</option>
-                        <option value="confirmed" {{ 'selected' if order['status'] == 'confirmed' }}>Confirmed</option>
-                        <option value="ready" {{ 'selected' if order['status'] == 'ready' }}>Ready</option>
-                        <option value="completed" {{ 'selected' if order['status'] == 'completed' }}>Completed</option>
-                        <option value="cancelled" {{ 'selected' if order['status'] == 'cancelled' }}>Cancelled</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary btn-sm w-100">Update</button>
-                </form>
-                <form action="/orders/delete/{{ order['id'] }}" method="POST"
-                      onsubmit="return confirm('Hapus order ini?')">
-                    <button type="submit" class="btn btn-danger btn-sm w-100">Hapus</button>
-                </form>
-                <a href="/orders/edit/{{ order['id'] }}" class="btn btn-info btn-sm w-100 mt-1">Edit</a>
+                {% if order['payment_status'] == 'paid' %}
+                <span class="badge bg-success">Lunas</span>
+                {% elif order['payment_status'] == 'dp' %}
+                <span class="badge bg-warning text-dark">DP</span>
+                {% else %}
+                <span class="badge bg-danger">Belum</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="/orders/{{ order['id'] }}" class="btn btn-primary btn-sm w-100">Detail</a>
             </td>
         </tr>
         {% endfor %}
@@ -126,7 +111,7 @@
 </table>
 </div>
 {% else %}
-<p>Belum ada order.</p>
+<p class="text-muted">Belum ada order.</p>
 {% endif %}
 
 <script>

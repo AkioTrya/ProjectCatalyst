@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% block title %}Detail Order — projectCatalyst{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Detail Order</h1>
+    <a href="/orders" class="btn btn-outline-secondary">← Kembali</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-md-6">
+        <div class="card h-100">
+            <div class="card-header">Info Order</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><td class="text-muted">Customer</td><td><strong>{{ order['customer_name'] }}</strong></td></tr>
+                    <tr><td class="text-muted">HP</td><td>{{ order['customer_phone'] or '-' }}</td></tr>
+                    <tr><td class="text-muted">Tanggal Order</td><td>{{ order['order_date'] }}</td></tr>
+                    <tr><td class="text-muted">Tanggal Ambil</td><td>{{ order['pickup_date'] or '-' }}</td></tr>
+                    <tr><td class="text-muted">Catatan</td><td>{{ order['notes'] or '-' }}</td></tr>
+                    <tr><td class="text-muted">Status</td>
+                        <td>
+                            <form action="/orders/status/{{ order['id'] }}" method="POST" class="d-flex gap-2">
+                                <select name="status" class="form-select form-select-sm">
+                                    <option value="pending" {{ 'selected' if order['status'] == 'pending' }}>Pending</option>
+                                    <option value="confirmed" {{ 'selected' if order['status'] == 'confirmed' }}>Confirmed</option>
+                                    <option value="ready" {{ 'selected' if order['status'] == 'ready' }}>Ready</option>
+                                    <option value="completed" {{ 'selected' if order['status'] == 'completed' }}>Completed</option>
+                                    <option value="cancelled" {{ 'selected' if order['status'] == 'cancelled' }}>Cancelled</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <div class="card h-100">
+            <div class="card-header">Ringkasan Pembayaran</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><td class="text-muted">Total Order</td><td><strong>Rp {{ "{:,.0f}".format(total_order or 0) }}</strong></td></tr>
+                    <tr><td class="text-muted">Total Dibayar</td><td class="text-success"><strong>Rp {{ "{:,.0f}".format(total_paid) }}</strong></td></tr>
+                    <tr><td class="text-muted">Sisa</td><td class="text-danger"><strong>Rp {{ "{:,.0f}".format(sisa) }}</strong></td></tr>
+                    <tr><td class="text-muted">Status Bayar</td>
+                        <td>
+                            {% if order['payment_status'] == 'paid' %}
+                            <span class="badge bg-success">Lunas</span>
+                            {% elif order['payment_status'] == 'dp' %}
+                            <span class="badge bg-warning text-dark">DP</span>
+                            {% else %}
+                            <span class="badge bg-danger">Belum Bayar</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+
+                {% if sisa > 0 %}
+                <hr>
+                <h6>Catat Pembayaran</h6>
+                <form action="/orders/payment/{{ order['id'] }}" method="POST">
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <input type="number" name="amount" class="form-control form-control-sm" 
+                                   placeholder="Nominal" value="{{ sisa }}" required>
+                        </div>
+                        <div class="col-6">
+                            <select name="payment_method" class="form-select form-select-sm">
+                                <option value="cash">Cash</option>
+                                <option value="transfer">Transfer</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <select name="payment_type" class="form-select form-select-sm">
+                                <option value="dp">DP</option>
+                                <option value="full">Full Payment</option>
+                                <option value="pelunasan">Pelunasan</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <input type="text" name="notes" class="form-control form-control-sm" placeholder="Catatan">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success btn-sm w-100">Catat Pembayaran</button>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                <div class="alert alert-success mt-2 mb-0">Order ini sudah lunas! ✓</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<div class="row g-4 mt-1">
+    <div class="col-12 col-md-6">
+        <div class="card">
+            <div class="card-header">Item Pesanan</div>
+            <div class="card-body p-0">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Produk</th>
+                            <th>Qty</th>
+                            <th>Harga</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>{{ item['product_name'] }}</td>
+                            <td>{{ item['quantity'] }}</td>
+                            <td>Rp {{ "{:,.0f}".format(item['price']) }}</td>
+                            <td>Rp {{ "{:,.0f}".format(item['quantity'] * item['price']) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="3"><strong>Total</strong></td>
+                            <td><strong>Rp {{ "{:,.0f}".format(total_order or 0) }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <div class="card">
+            <div class="card-header">Riwayat Pembayaran</div>
+            <div class="card-body p-0">
+                {% if payments %}
+                <table class="table table-bordered mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Tipe</th>
+                            <th>Metode</th>
+                            <th>Nominal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment['paid_at'] }}</td>
+                            <td>{{ payment['payment_type'] }}</td>
+                            <td>{{ payment['payment_method'] }}</td>
+                            <td>Rp {{ "{:,.0f}".format(payment['amount']) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted p-3 mb-0">Belum ada pembayaran.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 d-flex gap-2">
+    <a href="/orders/edit/{{ order['id'] }}" class="btn btn-info">Edit Order</a>
+    <form action="/orders/delete/{{ order['id'] }}" method="POST"
+          onsubmit="return confirm('Hapus order ini?')">
+        <button type="submit" class="btn btn-danger">Hapus Order</button>
+    </form>
+</div>
+
+{% endblock %}

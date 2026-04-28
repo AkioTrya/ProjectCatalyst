@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_top_products, get_monthly_summary, get_all_ingredients, add_ingredient, add_ingredient_price, get_ingredient_price_history, get_ingredient_prices_for_chart, add_payment, get_payments_by_order, get_product_by_id, update_product, get_order_by_id, update_order
+from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_top_products, get_monthly_summary, get_all_ingredients, add_ingredient, add_ingredient_price, get_ingredient_price_history, get_ingredient_prices_for_chart, add_payment, get_payments_by_order, get_product_by_id, update_product, get_order_by_id, update_order, get_order_detail
 app = Flask(__name__)
 
 @app.route('/')
@@ -173,6 +173,18 @@ def edit_order_route(order_id):
     notes = request.form['notes']
     update_order(order_id, customer_name, customer_phone, order_date, pickup_date, notes)
     return redirect(url_for('orders'))
+
+@app.route('/orders/<int:order_id>')
+def order_detail(order_id):
+    order, items, payments, total_order, total_paid = get_order_detail(order_id)
+    return render_template('order_detail.html',
+        order=order,
+        items=items,
+        payments=payments,
+        total_order=total_order,
+        total_paid=total_paid,
+        sisa=total_order - total_paid
+    )
 
 if __name__ == '__main__':
     init_db()
