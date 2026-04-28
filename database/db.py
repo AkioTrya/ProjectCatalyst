@@ -66,7 +66,14 @@ def add_order(customer_name, customer_phone, order_date, pickup_date, payment_me
             INSERT INTO order_items (order_id, product_id, quantity, price)
             VALUES (?, ?, ?, ?)
         """, (order_id, item['product_id'], item['quantity'], item['price']))
-    
+
     conn.commit()
     conn.close()
     return order_id
+ 
+def delete_order(order_id):
+    conn = get_connection()
+    conn.execute("DELETE FROM order_items WHERE order_id = ?", (order_id,))
+    conn.execute("DELETE FROM orders WHERE id = ?", (order_id,))
+    conn.commit()
+    conn.close()

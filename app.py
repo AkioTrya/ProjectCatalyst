@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order
+from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order
 
 app = Flask(__name__)
 
@@ -49,6 +49,11 @@ def add_order_route():
             })
     
     add_order(customer_name, customer_phone, order_date, pickup_date, payment_method, notes, items)
+    return redirect(url_for('orders'))
+
+@app.route('/orders/delete/<int:order_id>', methods=['POST'])
+def delete_order_route(order_id):
+    delete_order(order_id)
     return redirect(url_for('orders'))
 
 if __name__ == '__main__':

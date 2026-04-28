@@ -74,6 +74,7 @@
                 <th>Total Harga</th>
                 <th>Status</th>
                 <th>Pembayaran</th>
+                <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -87,6 +88,12 @@
                 <td>Rp {{ "{:,.0f}".format(order['total_harga'] or 0) }}</td>
                 <td>{{ order['status'] }}</td>
                 <td>{{ order['payment_method'] }}</td>
+                <td>
+                    <form action="/orders/delete/{{ order['id'] }}" method="POST"
+                            onsubmit="return confirm('Hapus order ini?')">
+                        <button type="submit">Hapus</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
