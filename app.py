@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_monthly_summary, get_top_products
-
+from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_top_products, get_monthly_summary, get_all_ingredients, add_ingredient, add_ingredient_price, get_ingredient_price_history, get_ingredient_prices_for_chart
 app = Flask(__name__)
 
 @app.route('/')
@@ -110,6 +109,33 @@ def reports():
         monthly=monthly,
         today=today
     )
+
+@app.route('/ingredients')
+def ingredients():
+    all_ingredients = get_all_ingredients()
+    history = get_ingredient_price_history()
+    chart_data = get_ingredient_prices_for_chart()
+    return render_template('ingredients.html',
+        ingredients=all_ingredients,
+        history=history,
+        chart_data=chart_data
+    )
+
+@app.route('/ingredients/add', methods=['POST'])
+def add_ingredient_route():
+    name = request.form['name']
+    unit = request.form['unit']
+    add_ingredient(name, unit)
+    return redirect(url_for('ingredients'))
+
+@app.route('/ingredients/price/add', methods=['POST'])
+def add_ingredient_price_route():
+    ingredient_id = request.form['ingredient_id']
+    price = request.form['price']
+    date = request.form['date']
+    notes = request.form['notes']
+    add_ingredient_price(int(ingredient_id), float(price), date, notes)
+    return redirect(url_for('ingredients'))
 
 if __name__ == '__main__':
     init_db()

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bahan Baku — projectCatalyst</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+    <h1>Tracker Bahan Baku</h1>
+    <a href="/">← Kembali</a>
+
+    <hr>
+
+    <h2>Tambah Bahan Baku</h2>
+    <form action="/ingredients/add" method="POST">
+        <label>Nama Bahan</label><br>
+        <input type="text" name="name" required><br><br>
+
+        <label>Satuan</label><br>
+        <input type="text" name="unit" placeholder="kg / liter / pcs" required><br><br>
+
+        <button type="submit">Tambah</button>
+    </form>
+
+    <hr>
+
+    <h2>Catat Harga Bahan</h2>
+    <form action="/ingredients/price/add" method="POST">
+        <label>Bahan Baku</label><br>
+        <select name="ingredient_id" required>
+            <option value="">-- Pilih Bahan --</option>
+            {% for ingredient in ingredients %}
+            <option value="{{ ingredient['id'] }}">
+                {{ ingredient['name'] }} ({{ ingredient['unit'] }})
+            </option>
+            {% endfor %}
+        </select><br><br>
+
+        <label>Harga per {{ '...' }}</label><br>
+        <input type="number" name="price" required><br><br>
+
+        <label>Tanggal</label><br>
+        <input type="date" name="date" required><br><br>
+
+        <label>Catatan (opsional)</label><br>
+        <input type="text" name="notes"><br><br>
+
+        <button type="submit">Simpan Harga</button>
+    </form>
+
+    <hr>
+
+    <h2>Grafik Harga Bahan Baku</h2>
+    {% if chart_data %}
+    <canvas id="ingredientChart" width="700" height="350"></canvas>
+    <script>
+        const chartData = {{ chart_data | tojson }};
+        
+        const colors = [
+            'rgb(255, 99, 132)',
+            'rgb(54, 162, 235)',
+            'rgb(255, 205, 86)',
+            'rgb(75, 192, 192)',
+            'rgb(153, 102, 255)',
+            'rgb(255, 159, 64)'
+        ];
+
+        const allDates = [...new Set(chartData.flatMap(d => d.dates))].sort();
+
+        const datasets = chartData.map((ingredient, i) => ({
+            label: ingredient.name,
+            data: allDates.map(date => {
+                const idx = ingredient.dates.indexOf(date);
+                return idx !== -1 ? ingredient.prices[idx] : null;
+            }),
+            borderColor: colors[i % colors.length],
+            backgroundColor: colors[i % colors.length],
+            tension: 0.1,
+            spanGaps: true
+        }));
+
+        new Chart(document.getElementById('ingredientChart'), {
+            type: 'line',
+            data: {
+                labels: allDates,
+                datasets: datasets
+            },
+            options: {
+                responsive: false,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: value => 'Rp ' + value.toLocaleString('id-ID')
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    {% else %}
+    <p>Belum ada data harga. Tambahkan bahan baku dan catat harganya!</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>Riwayat Harga</h2>
+    {% if history %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Tanggal</th>
+                <th>Bahan</th>
+                <th>Harga</th>
+                <th>Satuan</th>
+                <th>Catatan</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in history %}
+            <tr>
+                <td>{{ item['date'] }}</td>
+                <td>{{ item['name'] }}</td>
+                <td>Rp {{ "{:,.0f}".format(item['price']) }}</td>
+                <td>{{ item['unit'] }}</td>
+                <td>{{ item['notes'] or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Belum ada riwayat harga.</p>
+    {% endif %}
+
+</body>
+</html>

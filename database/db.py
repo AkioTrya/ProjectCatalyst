@@ -182,3 +182,86 @@ def get_monthly_summary():
     """).fetchall()
     conn.close()
     return summary
+
+def get_all_ingredients():
+    conn = get_connection()
+    ingredients = conn.execute(
+        "SELECT * FROM ingredients ORDER BY name"
+    ).fetchall()
+    conn.close()
+    return ingredients
+
+def add_ingredient(name, unit):
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO ingredients (name, unit) VALUES (?, ?)",
+        (name, unit)
+    )
+    conn.commit()
+    conn.close()
+
+def add_ingredient_price(ingredient_id, price, date, notes):
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO ingredient_prices (ingredient_id, price, date, notes) VALUES (?, ?, ?, ?)",
+        (ingredient_id, price, date, notes)
+    )
+    conn.commit()
+    conn.close()
+
+def get_ingredient_price_history():
+    conn = get_connection()
+    history = conn.execute("""
+        SELECT i.name, i.unit, ip.price, ip.date, ip.notes
+        FROM ingredient_prices ip
+        JOIN ingredients i ON ip.ingredient_id = i.id
+        ORDER BY ip.date DESC
+    """).fetchall()
+    conn.close()
+    return history
+
+def get_ingredient_prices_for_chart():
+    conn = get_connection()
+    ingredients = conn.execute("SELECT * FROM ingredients ORDER BY name").fetchall()
+    
+    chart_data = []
+    for ingredient in ingredients:
+        prices = conn.execute("""
+            SELECT date, price FROM ingredient_prices
+            WHERE ingredient_id = ?
+            ORDER BY date ASC
+        """, (ingredient['id'],)).fetchall()
+        
+        if prices:
+            chart_data.append({
+                'name': ingredient['name'],
+                'dates': [p['date'] for p in prices],
+                'prices': [p['price'] for p in prices]
+            })
+    conn.close()
+    return chart_data
+
+def add_ingredient_price(ingredient_id, price, date, notes):
+    conn = get_connection()
+    
+    # Ambil nama ingredient dulu
+    ingredient = conn.execute(
+        "SELECT * FROM ingredients WHERE id = ?", 
+        (ingredient_id,)
+    ).fetchone()
+    
+    # Insert ke ingredient_prices
+    conn.execute(
+        "INSERT INTO ingredient_prices (ingredient_id, price, date, notes) VALUES (?, ?, ?, ?)",
+        (ingredient_id, price, date, notes)
+    )
+    
+    # Otomatis insert ke expenses juga
+    conn.execute(
+        "INSERT INTO expenses (category, description, amount, date) VALUES (?, ?, ?, ?)",
+        ('bahan_baku', f"Beli {ingredient['name']}", price, date)
+    )
+    
+    conn.commit()
+    conn.close()
+

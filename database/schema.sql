@@ -49,3 +49,20 @@ CREATE TABLE IF NOT EXISTS expenses (
     date        TEXT NOT NULL,
     created_at  TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS ingredients (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    unit        TEXT NOT NULL,
+    created_at  TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ingredient_prices (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    ingredient_id   INTEGER NOT NULL,
+    price           REAL NOT NULL,
+    date            TEXT NOT NULL,
+    notes           TEXT,
+    created_at      TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
+);
