@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive
+from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense
 
 app = Flask(__name__)
 
@@ -75,6 +75,20 @@ def activate_product_route(product_id):
 def deactivate_product_route_manage(product_id):
     deactivate_product(product_id)
     return redirect(url_for('manage_products'))
+
+@app.route('/cashflow')
+def cashflow():
+    expenses = get_all_expenses()
+    return render_template('cashflow.html', expenses=expenses)
+
+@app.route('/cashflow/add', methods=['POST'])
+def add_expense_route():
+    category = request.form['category']
+    description = request.form['description']
+    amount = request.form['amount']
+    date = request.form['date']
+    add_expense(category, description, float(amount), date)
+    return redirect(url_for('cashflow'))
 
 if __name__ == '__main__':
     init_db()

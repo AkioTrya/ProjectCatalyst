@@ -103,3 +103,20 @@ def activate_product(product_id):
     )
     conn.commit()
     conn.close()
+
+def get_all_expenses():
+    conn = get_connection()
+    expenses = conn.execute(
+        "SELECT * FROM expenses ORDER BY date DESC"
+    ).fetchall()
+    conn.close()
+    return expenses
+
+def add_expense(category, description, amount, date):
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO expenses (category, description, amount, date) VALUES (?, ?, ?, ?)",
+        (category, description, amount, date)
+    )
+    conn.commit()
+    conn.close()
