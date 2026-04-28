@@ -19,3 +19,20 @@ def init_db():
     conn.commit()
     conn.close()
     print("Database initialized!")
+
+def get_all_products():
+    conn = get_connection()
+    products = conn.execute(
+        "SELECT * FROM products WHERE is_active = 1 ORDER BY name"
+    ).fetchall()
+    conn.close()
+    return products
+
+def add_product(name, price, unit):
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO products (name, price, unit) VALUES (?, ?, ?)",
+        (name, price, unit)
+    )
+    conn.commit()
+    conn.close()

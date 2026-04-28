@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produk — projectCatalyst</title>
+</head>
+<body>
+    <h1>Daftar Produk</h1>
+    <a href="/">← Kembali</a>
+
+    <hr>
+
+    <h2>Tambah Produk</h2>
+    <form action="/products/add" method="POST">
+        <label>Nama Produk</label><br>
+        <input type="text" name="name" required><br><br>
+
+        <label>Harga</label><br>
+        <input type="number" name="price" required><br><br>
+
+        <label>Satuan</label><br>
+        <input type="text" name="unit" placeholder="pcs / loyang / box" required><br><br>
+
+        <button type="submit">Tambah Produk</button>
+    </form>
+
+    <hr>
+
+    <h2>Produk Aktif</h2>
+    {% if products %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Harga</th>
+                <th>Satuan</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product['name'] }}</td>
+                <td>Rp {{ "{:,.0f}".format(product['price']) }}</td>
+                <td>{{ product['unit'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Belum ada produk. Tambahkan produk pertama!</p>
+    {% endif %}
+
+</body>
+</html>
