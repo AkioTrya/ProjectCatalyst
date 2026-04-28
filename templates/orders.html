@@ -75,6 +75,7 @@
                 <th>Status</th>
                 <th>Pembayaran</th>
                 <th>Aksi</th>
+                <th>Update Status</th>
             </tr>
         </thead>
         <tbody>
@@ -92,6 +93,18 @@
                     <form action="/orders/delete/{{ order['id'] }}" method="POST"
                             onsubmit="return confirm('Hapus order ini?')">
                         <button type="submit">Hapus</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/orders/status/{{ order['id'] }}" method="POST">
+                        <select name="status">
+                            <option value="pending" {{ 'selected' if order['status'] == 'pending' }}>Pending</option>
+                            <option value="confirmed" {{ 'selected' if order['status'] == 'confirmed' }}>Confirmed</option>
+                            <option value="ready" {{ 'selected' if order['status'] == 'ready' }}>Ready</option>
+                            <option value="completed" {{ 'selected' if order['status'] == 'completed' }}>Completed</option>
+                            <option value="cancelled" {{ 'selected' if order['status'] == 'cancelled' }}>Cancelled</option>
+                        </select>
+                        <button type="submit">Update</button>
                     </form>
                 </td>
             </tr>

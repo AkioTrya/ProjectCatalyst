@@ -120,3 +120,12 @@ def add_expense(category, description, amount, date):
     )
     conn.commit()
     conn.close()
+
+def update_order_status(order_id, status):
+    conn = get_connection()
+    conn.execute(
+        "UPDATE orders SET status = ? WHERE id = ?",
+        (status, order_id)
+    )
+    conn.commit()
+    conn.close()

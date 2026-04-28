@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense
+from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status
 
 app = Flask(__name__)
 
@@ -89,6 +89,12 @@ def add_expense_route():
     date = request.form['date']
     add_expense(category, description, float(amount), date)
     return redirect(url_for('cashflow'))
+
+@app.route('/orders/status/<int:order_id>', methods=['POST'])
+def update_order_status_route(order_id):
+    status = request.form['status']
+    update_order_status(order_id, status)
+    return redirect(url_for('orders'))
 
 if __name__ == '__main__':
     init_db()
