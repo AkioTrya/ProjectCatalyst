@@ -142,8 +142,7 @@
             <div class="card-header">Riwayat Pembayaran</div>
             <div class="card-body p-0">
                 {% if payments %}
-                <table class="table table-bordered mb-0">
-                    <table class="table table-bordered mb-0 table-sm">
+                <table class="table table-bordered mb-0 table-sm">
                     <thead class="table-dark">
                         <tr>
                             <th>Waktu</th>
@@ -166,10 +165,12 @@
                                     <img src="/static/{{ payment['screenshot_path'] }}" height="48" style="border-radius:4px; object-fit:cover;">
                                 </a>
                                 {% else %}
-                                <form action="/payments/upload/{{ payment['id'] }}" method="POST" enctype="multipart/form-data" class="d-flex gap-1">
+                                <form action="/payments/upload/{{ payment['id'] }}" method="POST" enctype="multipart/form-data">
                                     <input type="hidden" name="order_id" value="{{ order['id'] }}">
-                                    <input type="file" name="screenshot" class="form-control form-control-sm" accept="image/*" style="width:100px">
-                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Upload</button>
+                                    <input type="file" name="screenshot" id="file-{{ payment['id'] }}" accept="image/*" style="display:none" onchange="this.form.submit()">
+                                    <label for="file-{{ payment['id'] }}" class="btn btn-outline-secondary btn-sm mb-0 p-1" style="cursor:pointer">
+                                        <img src="/static/upload.png" height="20">
+                                    </label>
                                 </form>
                                 {% endif %}
                             </td>
