@@ -57,6 +57,8 @@ def logout():
 def index():
     return render_template('index.html')
 
+# ─── PRODUCTS ───
+
 @app.route('/products')
 @login_required
 def products():
@@ -107,6 +109,8 @@ def edit_product_page(product_id):
         return redirect(url_for('products'))
     product = get_product_by_id(product_id)
     return render_template('edit_product.html', product=product)
+
+# ─── ORDERS ───
 
 @app.route('/orders')
 @login_required
@@ -188,6 +192,8 @@ def order_detail(order_id):
         sisa=total_order - total_paid
     )
 
+# ─── CASHFLOW ───
+
 @app.route('/cashflow')
 @login_required
 def cashflow():
@@ -201,4 +207,59 @@ def add_expense_route():
     description = request.form['description']
     amount = request.form['amount']
     date = request.form['date']
-    add_expense(category, description, float(amount))
+    add_expense(category, description, float(amount), date)
+    return redirect(url_for('cashflow'))
+
+# ─── REPORTS ───
+
+@app.route('/reports')
+@login_required
+def reports():
+    from datetime import date
+    today = date.today().isoformat()
+    daily_orders, daily_expenses = get_daily_summary(today)
+    top_products = get_top_products()
+    monthly = get_monthly_summary()
+    return render_template('reports.html',
+        daily_orders=daily_orders,
+        daily_expenses=daily_expenses,
+        top_products=top_products,
+        monthly=monthly,
+        today=today
+    )
+
+# ─── INGREDIENTS ───
+
+@app.route('/ingredients')
+@login_required
+def ingredients():
+    all_ingredients = get_all_ingredients()
+    history = get_ingredient_price_history()
+    chart_data = get_ingredient_prices_for_chart()
+    return render_template('ingredients.html',
+        ingredients=all_ingredients,
+        history=history,
+        chart_data=chart_data
+    )
+
+@app.route('/ingredients/add', methods=['POST'])
+@login_required
+def add_ingredient_route():
+    name = request.form['name']
+    unit = request.form['unit']
+    add_ingredient(name, unit)
+    return redirect(url_for('ingredients'))
+
+@app.route('/ingredients/price/add', methods=['POST'])
+@login_required
+def add_ingredient_price_route():
+    ingredient_id = request.form['ingredient_id']
+    price = request.form['price']
+    date = request.form['date']
+    notes = request.form['notes']
+    add_ingredient_price(int(ingredient_id), float(price), date, notes)
+    return redirect(url_for('ingredients'))
+
+if __name__ == '__main__':
+    init_db()
+    app.run(debug=True, host='0.0.0.0')
