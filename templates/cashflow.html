@@ -29,9 +29,8 @@
                 </div>
                 <div class="col-12 col-md-2">
                     <label class="form-label">Tanggal</label>
-                    <input type="date" name="date" class="form-control" required>
+                    <input type="date" name="date" class="form-control" required id="expense_date">                </div>
                 </div>
-            </div>
             <button type="submit" class="btn btn-primary mt-3 w-100 w-md-auto">Simpan</button>
         </form>
     </div>
@@ -64,4 +63,7 @@
 {% else %}
 <p class="text-muted">Belum ada pengeluaran.</p>
 {% endif %}
+<script>
+document.getElementById('expense_date').valueAsDate = new Date();
+</script>
 {% endblock %}

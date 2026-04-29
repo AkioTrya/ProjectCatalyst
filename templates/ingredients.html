@@ -46,7 +46,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Tanggal</label>
-                        <input type="date" name="date" class="form-control" required>
+                        <input type="date" name="date" class="form-control" required id="ingredient_date">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Catatan (opsional)</label>
@@ -150,5 +150,7 @@
 {% else %}
 <p class="text-muted">Belum ada riwayat harga.</p>
 {% endif %}
-
+<script>
+document.getElementById('ingredient_date').valueAsDate = new Date();
+</script>
 {% endblock %}

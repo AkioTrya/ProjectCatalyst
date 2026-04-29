@@ -19,7 +19,7 @@
                 </div>
                 <div class="col-12 col-md-6">
                     <label class="form-label">Tanggal Order</label>
-                    <input type="date" name="order_date" class="form-control" required>
+                    <input type="date" name="order_date" class="form-control" required id="order_date">
                 </div>
                 <div class="col-12 col-md-6">
                     <label class="form-label">Tanggal Ambil</label>
@@ -57,7 +57,22 @@
         </form>
     </div>
 </div>
-
+<div class="row g-2 mb-3">
+    <div class="col-12 col-md-6">
+        <input type="text" id="searchOrder" class="form-control" 
+               placeholder="Cari nama customer...">
+    </div>
+    <div class="col-12 col-md-3">
+        <select id="filterStatus" class="form-select">
+            <option value="">Semua Status</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="ready">Ready</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+        </select>
+    </div>
+</div>
 <h2 class="mb-3">Daftar Order</h2>
 {% if orders %}
 <div class="table-responsive">
@@ -128,6 +143,26 @@ function addItem() {
     removeBtn.onclick = function() { newRow.remove(); };
     newRow.appendChild(removeBtn);
     container.appendChild(newRow);
+}
+document.getElementById('order_date').valueAsDate = new Date();
+// Search & filter
+document.getElementById('searchOrder').addEventListener('input', filterOrders);
+document.getElementById('filterStatus').addEventListener('change', filterOrders);
+
+function filterOrders() {
+    const search = document.getElementById('searchOrder').value.toLowerCase();
+    const status = document.getElementById('filterStatus').value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const customer = row.cells[0].textContent.toLowerCase();
+        const orderStatus = row.cells[4].textContent.toLowerCase();
+        
+        const matchSearch = customer.includes(search);
+        const matchStatus = status === '' || orderStatus.includes(status);
+        
+        row.style.display = matchSearch && matchStatus ? '' : 'none';
+    });
 }
 </script>
 {% endblock %}
