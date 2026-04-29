@@ -61,7 +61,7 @@
                 {% if sisa > 0 %}
                 <hr>
                 <h6>Catat Pembayaran</h6>
-                <form action="/orders/payment/{{ order['id'] }}" method="POST">
+                <form action="/orders/payment/{{ order['id'] }}" method="POST" enctype="multipart/form-data">
                     <div class="row g-2">
                         <div class="col-12">
                             <input type="number" name="amount" class="form-control form-control-sm" 
@@ -82,6 +82,10 @@
                         </div>
                         <div class="col-12">
                             <input type="text" name="notes" class="form-control form-control-sm" placeholder="Catatan">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label form-label-sm small text-muted">Bukti Transfer (opsional)</label>
+                            <input type="file" name="screenshot" class="form-control form-control-sm" accept="image/*">
                         </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-success btn-sm w-100">Catat Pembayaran</button>
@@ -139,12 +143,14 @@
             <div class="card-body p-0">
                 {% if payments %}
                 <table class="table table-bordered mb-0">
+                    <table class="table table-bordered mb-0 table-sm">
                     <thead class="table-dark">
                         <tr>
                             <th>Waktu</th>
                             <th>Tipe</th>
                             <th>Metode</th>
                             <th>Nominal</th>
+                            <th>Bukti</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -154,6 +160,19 @@
                             <td>{{ payment['payment_type'] }}</td>
                             <td>{{ payment['payment_method'] }}</td>
                             <td>Rp {{ "{:,.0f}".format(payment['amount']) }}</td>
+                            <td>
+                                {% if payment['screenshot_path'] %}
+                                <a href="/static/{{ payment['screenshot_path'] }}" target="_blank">
+                                    <img src="/static/{{ payment['screenshot_path'] }}" height="48" style="border-radius:4px; object-fit:cover;">
+                                </a>
+                                {% else %}
+                                <form action="/payments/upload/{{ payment['id'] }}" method="POST" enctype="multipart/form-data" class="d-flex gap-1">
+                                    <input type="hidden" name="order_id" value="{{ order['id'] }}">
+                                    <input type="file" name="screenshot" class="form-control form-control-sm" accept="image/*" style="width:100px">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Upload</button>
+                                </form>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -295,14 +295,13 @@ def add_ingredient_price(ingredient_id, price, date, notes):
     conn.commit()
     conn.close()
 
-def add_payment(order_id, amount, payment_method, payment_type, notes):
+def add_payment(order_id, amount, payment_method, payment_type, notes, screenshot_path=None):
     conn = get_connection()
     conn.execute("""
-        INSERT INTO payments (order_id, amount, payment_method, payment_type, notes)
-        VALUES (?, ?, ?, ?, ?)
-    """, (order_id, amount, payment_method, payment_type, notes))
+        INSERT INTO payments (order_id, amount, payment_method, payment_type, notes, screenshot_path)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (order_id, amount, payment_method, payment_type, notes, screenshot_path))
     
-    # Cek total payment vs total order
     total_order = conn.execute("""
         SELECT SUM(quantity * price) as total
         FROM order_items WHERE order_id = ?
@@ -313,18 +312,20 @@ def add_payment(order_id, amount, payment_method, payment_type, notes):
         FROM payments WHERE order_id = ?
     """, (order_id,)).fetchone()['total']
     
-    # Auto update payment status
     if total_paid >= total_order:
-        conn.execute(
-            "UPDATE orders SET payment_status = 'paid' WHERE id = ?",
-            (order_id,)
-        )
+        conn.execute("UPDATE orders SET payment_status = 'paid' WHERE id = ?", (order_id,))
     else:
-        conn.execute(
-            "UPDATE orders SET payment_status = 'dp' WHERE id = ?",
-            (order_id,)
-        )
+        conn.execute("UPDATE orders SET payment_status = 'dp' WHERE id = ?", (order_id,))
     
+    conn.commit()
+    conn.close()
+
+def upload_payment_screenshot(payment_id, screenshot_path):
+    conn = get_connection()
+    conn.execute(
+        "UPDATE payments SET screenshot_path = ? WHERE id = ?",
+        (screenshot_path, payment_id)
+    )
     conn.commit()
     conn.close()
 

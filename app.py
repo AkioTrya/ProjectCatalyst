@@ -1,6 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_top_products, get_monthly_summary, get_all_ingredients, add_ingredient, add_ingredient_price, get_ingredient_price_history, get_ingredient_prices_for_chart, add_payment, get_payments_by_order, get_product_by_id, update_product, get_order_by_id, update_order, get_order_detail, get_user_by_username, get_user_by_id, create_user, verify_password
+from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_top_products, get_monthly_summary, get_all_ingredients, add_ingredient, add_ingredient_price, get_ingredient_price_history, get_ingredient_prices_for_chart, add_payment, get_payments_by_order, get_product_by_id, update_product, get_order_by_id, update_order, get_order_detail, get_user_by_username, get_user_by_id, create_user, verify_password, upload_payment_screenshot
+import os
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = os.path.join('static', 'uploads', 'payments')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 app = Flask(__name__)
 app.secret_key = 'catalyst-secret-key-ganti-ini-nanti'
@@ -23,7 +31,6 @@ def load_user(user_id):
     if row:
         return User(row['id'], row['username'], row['password_hash'])
     return None
-
 # ─── AUTH ───
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -176,8 +183,32 @@ def add_payment_route(order_id):
     payment_method = request.form['payment_method']
     payment_type = request.form['payment_type']
     notes = request.form['notes']
-    add_payment(order_id, float(amount), payment_method, payment_type, notes)
-    return redirect(url_for('orders'))
+    
+    screenshot_path = None
+    if 'screenshot' in request.files:
+        file = request.files['screenshot']
+        if file and file.filename != '' and allowed_file(file.filename):
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            filename = secure_filename(f"order{order_id}_{file.filename}")
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            screenshot_path = f"uploads/payments/{filename}"
+    
+    add_payment(order_id, float(amount), payment_method, payment_type, notes, screenshot_path)
+    return redirect(url_for('order_detail', order_id=order_id))
+
+@app.route('/payments/upload/<int:payment_id>', methods=['POST'])
+@login_required
+def upload_screenshot_route(payment_id):
+    order_id = request.form['order_id']
+    if 'screenshot' in request.files:
+        file = request.files['screenshot']
+        if file and file.filename != '' and allowed_file(file.filename):
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            filename = secure_filename(f"payment{payment_id}_{file.filename}")
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            screenshot_path = f"uploads/payments/{filename}"
+            upload_payment_screenshot(payment_id, screenshot_path)
+    return redirect(url_for('order_detail', order_id=order_id))
 
 @app.route('/orders/<int:order_id>')
 @login_required
@@ -259,6 +290,8 @@ def add_ingredient_price_route():
     notes = request.form['notes']
     add_ingredient_price(int(ingredient_id), float(price), date, notes)
     return redirect(url_for('ingredients'))
+
+
 
 if __name__ == '__main__':
     init_db()
