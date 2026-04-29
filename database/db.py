@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Path ke file database
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -19,6 +20,35 @@ def init_db():
     conn.commit()
     conn.close()
     print("Database initialized!")
+
+def create_user(username, password):
+    conn = get_connection()
+    try:
+        conn.execute(
+            'INSERT INTO users (username, password_hash) VALUES (?, ?)',
+            (username, generate_password_hash(password))
+        )
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+def get_user_by_username(username):
+    conn = get_connection()
+    user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+    conn.close()
+    return user
+
+def get_user_by_id(user_id):
+    conn = get_connection()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+    return user
+
+def verify_password(stored_hash, password):
+    return check_password_hash(stored_hash, password)
 
 def get_all_products():
     conn = get_connection()
