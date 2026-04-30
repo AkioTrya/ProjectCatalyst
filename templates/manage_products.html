@@ -35,11 +35,13 @@
                 {% if product['is_active'] == 1 %}
                 <form action="/products/deactivate/{{ product['id'] }}" method="POST"
                       onsubmit="return confirm('Nonaktifkan produk ini?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-warning btn-sm w-100">Nonaktifkan</button>
                 </form>
                 {% else %}
                 <form action="/products/activate/{{ product['id'] }}" method="POST"
                       onsubmit="return confirm('Aktifkan produk ini?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-success btn-sm w-100">Aktifkan</button>
                 </form>
                 {% endif %}

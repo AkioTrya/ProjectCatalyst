@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}429 Too Many Requests — projectCatalyst{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 text-center">
+        <div style="font-size: 5rem; line-height: 1;">⏱️</div>
+        <h1 class="display-4 fw-bold mt-3 mb-2">429</h1>
+        <h2 class="h4 text-muted mb-4">Terlalu Banyak Percobaan</h2>
+        <p class="text-muted mb-4">
+            Kami mendeteksi terlalu banyak aktivitas dari alamat IP Anda.<br>
+            <strong>{{ description }}</strong>
+        </p>
+        <p class="text-muted small">Silakan tunggu beberapa saat lalu coba lagi.</p>
+        <a href="/" class="btn btn-primary px-4 mt-2">← Kembali</a>
+    </div>
+</div>
+{% endblock %}

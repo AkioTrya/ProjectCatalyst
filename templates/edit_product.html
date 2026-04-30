@@ -10,6 +10,7 @@
 <div class="card">
     <div class="card-body">
         <form action="/products/edit/{{ product['id'] }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row g-3">
                 <div class="col-12 col-md-4">
                     <label class="form-label">Nama Produk</label>

@@ -10,6 +10,7 @@
             <div class="card-header">Tambah Bahan Baku</div>
             <div class="card-body">
                 <form action="/ingredients/add" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label class="form-label">Nama Bahan</label>
                         <input type="text" name="name" class="form-control" required>
@@ -29,6 +30,7 @@
             <div class="card-header">Catat Harga Bahan</div>
             <div class="card-body">
                 <form action="/ingredients/price/add" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label class="form-label">Bahan Baku</label>
                         <select name="ingredient_id" class="form-select" required>

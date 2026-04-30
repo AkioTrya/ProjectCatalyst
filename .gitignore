@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+env/
+
+# Environment Variables (DO NOT COMMIT SECRETS)
+.env
+secret.key
+
+# Database
+database/catalyst.db
+database/*.db
+
+# Uploads
+static/uploads/payments/*
+!static/uploads/payments/.keep

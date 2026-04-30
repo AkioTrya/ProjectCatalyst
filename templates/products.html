@@ -9,6 +9,7 @@
     <div class="card-header">Tambah Produk</div>
     <div class="card-body">
         <form action="/products/add" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row g-3">
                 <div class="col-12 col-md-4">
                     <label class="form-label">Nama Produk</label>
@@ -57,6 +58,7 @@
                     {% if current_user.is_admin %}
                     <form action="/products/delete/{{ product['id'] }}" method="POST"
                           onsubmit="return confirm('Nonaktifkan produk ini?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-warning btn-sm w-100">Nonaktifkan</button>
                     </form>
                     {% else %}

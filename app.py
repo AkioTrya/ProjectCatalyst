@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from functools import wraps
 from database.db import (
     init_db, get_all_products, add_product, get_all_orders, add_order,
@@ -17,6 +20,10 @@ from database.db import (
 )
 import os
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # ─── CONFIG ───
 
@@ -27,17 +34,18 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 
-# Generate and persist a stable secret key so sessions survive server restarts
-_SECRET_KEY_FILE = os.path.join(os.path.dirname(__file__), 'secret.key')
-if os.path.exists(_SECRET_KEY_FILE):
-    with open(_SECRET_KEY_FILE, 'rb') as _f:
-        app.secret_key = _f.read()
-else:
-    _key = os.urandom(32)
-    with open(_SECRET_KEY_FILE, 'wb') as _f:
-        _f.write(_key)
-    app.secret_key = _key
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    storage_uri="memory://"
+)
+
+# Use SECRET_KEY from .env, with a fallback warning if missing
+app.secret_key = os.environ.get("SECRET_KEY")
+if not app.secret_key:
+    raise RuntimeError("SECRET_KEY is not set! Please create a .env file with a SECRET_KEY.")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -81,9 +89,14 @@ def admin_required(f):
 def forbidden(e):
     return render_template('403.html'), 403
 
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return render_template('429.html', description=e.description), 429
+
 # ─── AUTH ───
 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))

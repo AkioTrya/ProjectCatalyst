@@ -15,6 +15,7 @@
         <div class="card-header fw-semibold">Buat Akun Baru</div>
         <div class="card-body">
             <form action="/admin/users/add" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="row g-3">
                     <div class="col-12 col-md-4">
                         <label class="form-label">Username</label>
@@ -77,6 +78,7 @@
                         <td>
                             {% if u['id'] != current_user.id %}
                             <form action="/admin/users/role/{{ u['id'] }}" method="POST" class="d-flex gap-1">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <select name="role" class="form-select form-select-sm" style="min-width:100px">
                                     <option value="user" {{ 'selected' if u['role'] == 'user' }}>User</option>
                                     <option value="admin" {{ 'selected' if u['role'] == 'admin' }}>Admin</option>
@@ -97,6 +99,7 @@
                             </button>
                             <div class="collapse mt-2" id="resetPw-{{ u['id'] }}">
                                 <form action="/admin/users/password/{{ u['id'] }}" method="POST" class="d-flex gap-1">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="password" name="new_password" class="form-control form-control-sm"
                                            placeholder="Password baru" required autocomplete="new-password"
                                            style="min-width: 130px">
@@ -110,6 +113,7 @@
                             {% if u['id'] != current_user.id %}
                             <form action="/admin/users/delete/{{ u['id'] }}" method="POST"
                                   onsubmit="return confirm('Hapus user {{ u['username'] }}? Ini tidak bisa dibatalkan.')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
                             </form>
                             {% else %}
