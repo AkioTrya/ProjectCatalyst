@@ -17,7 +17,7 @@ This project is not just code. It’s the catalyst for my engineering journey.
 
 ---
 
-🎯 What It Does
+##What It Does
 
 - **Order Management** – Create, update, and track cake orders (status, due date, customer name).
 - **Product/Inventory Tracking** – Manage available cakes, ingredients, and stock levels.
@@ -28,7 +28,7 @@ This project is not just code. It’s the catalyst for my engineering journey.
 
 ---
 
-## 🧰 Tech Stack
+##Tech Stack
 
 | Layer       | Technology                         |
 |-------------|------------------------------------|
@@ -37,3 +37,10 @@ This project is not just code. It’s the catalyst for my engineering journey.
 | Frontend    | HTML5, Jinja2, Bootstrap 5, vanilla JS |
 | Auth        | Flask‑Login (optional future)      |
 | Deployment  | Local (For Now)                    |
+
+
+
+**Future Update**
+-Security related update
+-Dark mode?
+-
