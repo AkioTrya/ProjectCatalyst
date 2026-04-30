@@ -20,10 +20,6 @@ from database.db import (
 )
 import os
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 # ─── CONFIG ───
 
@@ -42,10 +38,16 @@ limiter = Limiter(
     storage_uri="memory://"
 )
 
-# Use SECRET_KEY from .env, with a fallback warning if missing
-app.secret_key = os.environ.get("SECRET_KEY")
-if not app.secret_key:
-    raise RuntimeError("SECRET_KEY is not set! Please create a .env file with a SECRET_KEY.")
+# Generate and persist a stable secret key so sessions survive server restarts
+_SECRET_KEY_FILE = os.path.join(os.path.dirname(__file__), 'secret.key')
+if os.path.exists(_SECRET_KEY_FILE):
+    with open(_SECRET_KEY_FILE, 'rb') as _f:
+        app.secret_key = _f.read()
+else:
+    _key = os.urandom(32)
+    with open(_SECRET_KEY_FILE, 'wb') as _f:
+        _f.write(_key)
+    app.secret_key = _key
 
 login_manager = LoginManager()
 login_manager.init_app(app)

@@ -24,8 +24,15 @@ def init_db():
         print("Migration: added 'role' column to users.")
     except Exception:
         pass  # Column already exists — safe to ignore
-    conn.commit()
+        
+    # Auto-bootstrap first admin if table is empty
+    count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
     conn.close()
+    
+    if count == 0:
+        create_user('admin', 'admin123', 'admin')
+        print("Auto-bootstrapped default admin account: admin / admin123")
+        
     print("Database initialized!")
 
 def create_user(username, password, role='user'):
