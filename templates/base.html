@@ -30,17 +30,17 @@
             position: relative;
         }
         .nav-link:hover {
-        color: #fff !important;
+            color: #fff !important;
         }
         .nav-link::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 0;
-        height: 2px;
-        background: #fff;
-        transition: width 0.9s ease;
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #fff;
+            transition: width 0.3s ease;
         }
         .nav-link:hover::after {
             width: 100%;
@@ -55,7 +55,7 @@
         .navbar-toggler:focus {
             box-shadow: none !important;
         }
-       @media (max-width: 991px) {
+        @media (max-width: 991px) {
             .navbar-collapse {
                 background-color: #2f2f69;
                 padding: 16px;
@@ -68,7 +68,7 @@
             }
         }
         .table tbody tr:nth-child(even) {
-             background-color: #eef2ff;
+            background-color: #eef2ff;
         }
         .table td {
             text-align: center;
@@ -77,6 +77,29 @@
         .table th {
             text-align: center;
             vertical-align: middle;
+        }
+        /* Role badge */
+        .role-badge {
+            font-size: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 0.07em;
+            padding: 2px 7px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            line-height: 1.6;
+            display: inline-block;
+        }
+        .role-badge.admin {
+            background: #fbbf24;
+            color: #1a1a1a;
+        }
+        .role-badge.user {
+            background: #6ee7b7;
+            color: #1a1a1a;
+        }
+        /* Admin-only nav items */
+        .nav-item.admin-only {
+            opacity: 0.85;
         }
     </style>
 </head>
@@ -92,19 +115,53 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navmenu">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <!-- Accessible to all logged-in users -->
                 <li class="nav-item"><a class="nav-link" href="/products">Produk</a></li>
                 <li class="nav-item"><a class="nav-link" href="/orders">Order</a></li>
-                <li class="nav-item"><a class="nav-link" href="/cashflow">Cashflow</a></li>
-                <li class="nav-item"><a class="nav-link" href="/ingredients">Bahan Baku</a></li>
-                <li class="nav-item"><a class="nav-link" href="/reports">Laporan</a></li>
-                <li class="nav-item"><a class="nav-link text-danger" href="{{ url_for('logout') }}">Logout</a></li>
+
+                <!-- Admin-only nav items -->
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                <li class="nav-item admin-only"><a class="nav-link" href="/cashflow">Cashflow</a></li>
+                <li class="nav-item admin-only"><a class="nav-link" href="/ingredients">Bahan Baku</a></li>
+                <li class="nav-item admin-only"><a class="nav-link" href="/reports">Laporan</a></li>
+                <li class="nav-item admin-only">
+                    <a class="nav-link" href="/admin/users">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1" style="vertical-align:-1px">
+                            <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                        </svg>
+                        Users
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- User identity + role badge -->
+                {% if current_user.is_authenticated %}
+                <li class="nav-item ms-lg-3 d-flex align-items-center gap-2" style="border-left: 1px solid rgba(255,255,255,0.15); padding-left: 1rem;">
+                    <span class="text-white small fw-semibold" style="opacity:.85">{{ current_user.username }}</span>
+                    <span class="role-badge {{ current_user.role }}">{{ current_user.role }}</span>
+                </li>
+                {% endif %}
+
+                <li class="nav-item ms-lg-2">
+                    <a class="nav-link text-danger" href="{{ url_for('logout') }}">Logout</a>
+                </li>
             </ul>
         </div>
     </div>
 </nav>
 
 <div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     {% block content %}{% endblock %}
 </div>
 

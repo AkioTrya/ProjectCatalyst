@@ -1,3 +1,11 @@
+CREATE TABLE IF NOT EXISTS users (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    username      TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    role          TEXT NOT NULL DEFAULT 'user',
+    created_at    TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS products (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT NOT NULL,

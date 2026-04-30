@@ -188,10 +188,12 @@
 
 <div class="mt-4 d-flex gap-2">
     <a href="/orders/edit/{{ order['id'] }}" class="btn btn-info">Edit Order</a>
+    {% if current_user.is_admin %}
     <form action="/orders/delete/{{ order['id'] }}" method="POST"
           onsubmit="return confirm('Hapus order ini?')">
         <button type="submit" class="btn btn-danger">Hapus Order</button>
     </form>
+    {% endif %}
 </div>
 
 {% endblock %}

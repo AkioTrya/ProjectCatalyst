@@ -1,8 +1,24 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from database.db import init_db, get_all_products, add_product, get_all_orders, add_order, delete_order, deactivate_product, activate_product, get_all_products_including_inactive, get_all_expenses, add_expense, update_order_status, get_daily_summary, get_top_products, get_monthly_summary, get_all_ingredients, add_ingredient, add_ingredient_price, get_ingredient_price_history, get_ingredient_prices_for_chart, add_payment, get_payments_by_order, get_product_by_id, update_product, get_order_by_id, update_order, get_order_detail, get_user_by_username, get_user_by_id, create_user, verify_password, upload_payment_screenshot
+from functools import wraps
+from database.db import (
+    init_db, get_all_products, add_product, get_all_orders, add_order,
+    delete_order, deactivate_product, activate_product,
+    get_all_products_including_inactive, get_all_expenses, add_expense,
+    update_order_status, get_daily_summary, get_top_products, get_monthly_summary,
+    get_all_ingredients, add_ingredient, add_ingredient_price,
+    get_ingredient_price_history, get_ingredient_prices_for_chart,
+    add_payment, get_payments_by_order, get_product_by_id, update_product,
+    get_order_by_id, update_order, get_order_detail,
+    get_user_by_username, get_user_by_id, create_user, verify_password,
+    upload_payment_screenshot,
+    # User management
+    get_all_users, update_user_role, delete_user, update_user_password
+)
 import os
 from werkzeug.utils import secure_filename
+
+# ─── CONFIG ───
 
 UPLOAD_FOLDER = os.path.join('static', 'uploads', 'payments')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
@@ -11,7 +27,17 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 app = Flask(__name__)
-app.secret_key = 'catalyst-secret-key-ganti-ini-nanti'
+
+# Generate and persist a stable secret key so sessions survive server restarts
+_SECRET_KEY_FILE = os.path.join(os.path.dirname(__file__), 'secret.key')
+if os.path.exists(_SECRET_KEY_FILE):
+    with open(_SECRET_KEY_FILE, 'rb') as _f:
+        app.secret_key = _f.read()
+else:
+    _key = os.urandom(32)
+    with open(_SECRET_KEY_FILE, 'wb') as _f:
+        _f.write(_key)
+    app.secret_key = _key
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -19,18 +45,42 @@ login_manager.login_view = 'login'
 login_manager.login_message = 'Login dulu ya!'
 login_manager.login_message_category = 'warning'
 
+# ─── USER MODEL ───
+
 class User(UserMixin):
-    def __init__(self, id, username, password_hash):
+    def __init__(self, id, username, password_hash, role='user'):
         self.id = id
         self.username = username
         self.password_hash = password_hash
+        self.role = role
+
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
 
 @login_manager.user_loader
 def load_user(user_id):
     row = get_user_by_id(user_id)
     if row:
-        return User(row['id'], row['username'], row['password_hash'])
+        return User(row['id'], row['username'], row['password_hash'], row['role'])
     return None
+
+# ─── DECORATORS ───
+
+def admin_required(f):
+    """Restrict a route to admin users only. Returns 403 for staff."""
+    @wraps(f)
+    @login_required
+    def decorated(*args, **kwargs):
+        if not current_user.is_admin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated
+
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('403.html'), 403
+
 # ─── AUTH ───
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -42,7 +92,7 @@ def login():
         password = request.form['password']
         user_row = get_user_by_username(username)
         if user_row and verify_password(user_row['password_hash'], password):
-            user = User(user_row['id'], user_row['username'], user_row['password_hash'])
+            user = User(user_row['id'], user_row['username'], user_row['password_hash'], user_row['role'])
             login_user(user)
             next_page = request.args.get('next')
             return redirect(next_page or url_for('index'))
@@ -73,7 +123,7 @@ def products():
     return render_template('products.html', products=all_products)
 
 @app.route('/products/add', methods=['POST'])
-@login_required
+@admin_required
 def add_product_route():
     name = request.form['name']
     price = request.form['price']
@@ -82,31 +132,31 @@ def add_product_route():
     return redirect(url_for('products'))
 
 @app.route('/products/manage')
-@login_required
+@admin_required
 def manage_products():
     all_products = get_all_products_including_inactive()
     return render_template('manage_products.html', products=all_products)
 
 @app.route('/products/activate/<int:product_id>', methods=['POST'])
-@login_required
+@admin_required
 def activate_product_route(product_id):
     activate_product(product_id)
     return redirect(url_for('manage_products'))
 
 @app.route('/products/deactivate/<int:product_id>', methods=['POST'])
-@login_required
+@admin_required
 def deactivate_product_route_manage(product_id):
     deactivate_product(product_id)
     return redirect(url_for('manage_products'))
 
 @app.route('/products/delete/<int:product_id>', methods=['POST'])
-@login_required
+@admin_required
 def deactivate_product_route(product_id):
     deactivate_product(product_id)
     return redirect(url_for('products'))
 
 @app.route('/products/edit/<int:product_id>', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def edit_product_page(product_id):
     if request.method == 'POST':
         name = request.form['name']
@@ -150,7 +200,7 @@ def add_order_route():
     return redirect(url_for('orders'))
 
 @app.route('/orders/delete/<int:order_id>', methods=['POST'])
-@login_required
+@admin_required
 def delete_order_route(order_id):
     delete_order(order_id)
     return redirect(url_for('orders'))
@@ -183,7 +233,7 @@ def add_payment_route(order_id):
     payment_method = request.form['payment_method']
     payment_type = request.form['payment_type']
     notes = request.form['notes']
-    
+
     screenshot_path = None
     if 'screenshot' in request.files:
         file = request.files['screenshot']
@@ -192,7 +242,7 @@ def add_payment_route(order_id):
             filename = secure_filename(f"order{order_id}_{file.filename}")
             file.save(os.path.join(UPLOAD_FOLDER, filename))
             screenshot_path = f"uploads/payments/{filename}"
-    
+
     add_payment(order_id, float(amount), payment_method, payment_type, notes, screenshot_path)
     return redirect(url_for('order_detail', order_id=order_id))
 
@@ -226,13 +276,13 @@ def order_detail(order_id):
 # ─── CASHFLOW ───
 
 @app.route('/cashflow')
-@login_required
+@admin_required
 def cashflow():
     expenses = get_all_expenses()
     return render_template('cashflow.html', expenses=expenses)
 
 @app.route('/cashflow/add', methods=['POST'])
-@login_required
+@admin_required
 def add_expense_route():
     category = request.form['category']
     description = request.form['description']
@@ -244,7 +294,7 @@ def add_expense_route():
 # ─── REPORTS ───
 
 @app.route('/reports')
-@login_required
+@admin_required
 def reports():
     from datetime import date
     today = date.today().isoformat()
@@ -262,7 +312,7 @@ def reports():
 # ─── INGREDIENTS ───
 
 @app.route('/ingredients')
-@login_required
+@admin_required
 def ingredients():
     all_ingredients = get_all_ingredients()
     history = get_ingredient_price_history()
@@ -274,7 +324,7 @@ def ingredients():
     )
 
 @app.route('/ingredients/add', methods=['POST'])
-@login_required
+@admin_required
 def add_ingredient_route():
     name = request.form['name']
     unit = request.form['unit']
@@ -282,7 +332,7 @@ def add_ingredient_route():
     return redirect(url_for('ingredients'))
 
 @app.route('/ingredients/price/add', methods=['POST'])
-@login_required
+@admin_required
 def add_ingredient_price_route():
     ingredient_id = request.form['ingredient_id']
     price = request.form['price']
@@ -291,7 +341,63 @@ def add_ingredient_price_route():
     add_ingredient_price(int(ingredient_id), float(price), date, notes)
     return redirect(url_for('ingredients'))
 
+# ─── ADMIN — USER MANAGEMENT ───
 
+@app.route('/admin/users')
+@admin_required
+def admin_users():
+    users = get_all_users()
+    return render_template('admin/users.html', users=users)
+
+@app.route('/admin/users/add', methods=['POST'])
+@admin_required
+def admin_add_user():
+    username = request.form['username'].strip()
+    password = request.form['password'].strip()
+    role = request.form.get('role', 'user')
+    if not username or not password:
+        flash('Username dan password tidak boleh kosong.', 'danger')
+        return redirect(url_for('admin_users'))
+    success = create_user(username, password, role)
+    if success:
+        flash(f"User '{username}' ({role}) berhasil dibuat.", 'success')
+    else:
+        flash(f"Username '{username}' sudah digunakan.", 'danger')
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/users/role/<int:user_id>', methods=['POST'])
+@admin_required
+def admin_change_role(user_id):
+    if user_id == current_user.id:
+        flash('Tidak bisa mengubah role diri sendiri.', 'warning')
+        return redirect(url_for('admin_users'))
+    new_role = request.form.get('role', 'user')
+    update_user_role(user_id, new_role)
+    flash('Role berhasil diubah.', 'success')
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/users/password/<int:user_id>', methods=['POST'])
+@admin_required
+def admin_reset_password(user_id):
+    new_password = request.form.get('new_password', '').strip()
+    if not new_password:
+        flash('Password baru tidak boleh kosong.', 'danger')
+        return redirect(url_for('admin_users'))
+    update_user_password(user_id, new_password)
+    flash('Password berhasil direset.', 'success')
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
+@admin_required
+def admin_delete_user(user_id):
+    if user_id == current_user.id:
+        flash('Tidak bisa menghapus akun sendiri.', 'warning')
+        return redirect(url_for('admin_users'))
+    delete_user(user_id)
+    flash('User berhasil dihapus.', 'success')
+    return redirect(url_for('admin_users'))
+
+# ─── RUN ───
 
 if __name__ == '__main__':
     init_db()

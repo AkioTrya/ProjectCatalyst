@@ -6,8 +6,14 @@ if __name__ == '__main__':
     init_db()
     username = input("Username: ").strip()
     password = input("Password: ").strip()
+    role = input("Role [admin/user] (default: user): ").strip().lower() or 'user'
+
     if not username or not password:
         print("Tidak boleh kosong.")
         sys.exit(1)
-    success = create_user(username, password)
-    print(f"✅ User '{username}' berhasil!" if success else f"❌ Username '{username}' sudah ada.")
+    if role not in ('admin', 'user'):
+        print("Role tidak valid. Pilih 'admin' atau 'user'.")
+        sys.exit(1)
+
+    success = create_user(username, password, role)
+    print(f"✅ User '{username}' ({role}) berhasil!" if success else f"❌ Username '{username}' sudah ada.")

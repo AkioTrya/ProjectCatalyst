@@ -17,16 +17,26 @@ def init_db():
     conn = get_connection()
     with open(SCHEMA_PATH, 'r') as f:
         conn.executescript(f.read())
+    # Migration: add role column to existing users tables that don't have it
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'")
+        conn.commit()
+        print("Migration: added 'role' column to users.")
+    except Exception:
+        pass  # Column already exists — safe to ignore
     conn.commit()
     conn.close()
     print("Database initialized!")
 
-def create_user(username, password):
+def create_user(username, password, role='user'):
+    """Create a new user. role must be 'admin' or 'user'."""
+    if role not in ('admin', 'user'):
+        role = 'user'
     conn = get_connection()
     try:
         conn.execute(
-            'INSERT INTO users (username, password_hash) VALUES (?, ?)',
-            (username, generate_password_hash(password))
+            'INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)',
+            (username, generate_password_hash(password), role)
         )
         conn.commit()
         return True
@@ -34,6 +44,42 @@ def create_user(username, password):
         return False
     finally:
         conn.close()
+
+def get_all_users():
+    """Return all users (id, username, role, created_at)."""
+    conn = get_connection()
+    users = conn.execute(
+        "SELECT id, username, role, created_at FROM users ORDER BY created_at ASC"
+    ).fetchall()
+    conn.close()
+    return users
+
+def update_user_role(user_id, role):
+    """Change the role of a user. role must be 'admin' or 'user'."""
+    if role not in ('admin', 'user'):
+        return False
+    conn = get_connection()
+    conn.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
+    conn.commit()
+    conn.close()
+    return True
+
+def delete_user(user_id):
+    """Permanently delete a user by id."""
+    conn = get_connection()
+    conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+def update_user_password(user_id, new_password):
+    """Reset a user's password (admin action)."""
+    conn = get_connection()
+    conn.execute(
+        "UPDATE users SET password_hash = ? WHERE id = ?",
+        (generate_password_hash(new_password), user_id)
+    )
+    conn.commit()
+    conn.close()
 
 def get_user_by_username(username):
     conn = get_connection()

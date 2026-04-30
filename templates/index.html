@@ -4,9 +4,19 @@
 {% block content %}
 <div class="row justify-content-center mt-5">
     <div class="col-md-8 text-center">
-        <h1 class="mb-2">projectCatalyst</h1>
-        <p class="text-muted mb-5">Catalyst Management System</p>
+        <h1 class="mb-1">projectCatalyst</h1>
+        <p class="text-muted mb-1">Catalyst Management System</p>
+        {% if current_user.is_authenticated %}
+        <p class="text-muted small mb-5">
+            Selamat datang, <strong>{{ current_user.username }}</strong>
+            <span class="badge {% if current_user.is_admin %}bg-warning text-dark{% else %}bg-success{% endif %} ms-1">
+                {{ current_user.role }}
+            </span>
+        </p>
+        {% endif %}
+
         <div class="row g-3">
+            {# Products — visible to all #}
             <div class="col-md-4">
                 <a href="/products" class="text-decoration-none">
                     <div class="card h-100 p-3">
@@ -18,6 +28,8 @@
                     </div>
                 </a>
             </div>
+
+            {# Orders — visible to all #}
             <div class="col-md-4">
                 <a href="/orders" class="text-decoration-none">
                     <div class="card h-100 p-3">
@@ -29,17 +41,22 @@
                     </div>
                 </a>
             </div>
+
+            {# Cashflow — admin only #}
+            {% if current_user.is_admin %}
             <div class="col-md-4">
                 <a href="/cashflow" class="text-decoration-none">
                     <div class="card h-100 p-3">
                         <div class="card-body text-center">
                             <img src="/static/cashflow.png" height="32" class="mb-3">
                             <h5 class="card-title">Keuangan</h5>
-                            <p class="card-text text-muted">Catat pemasukan & pengeluaran</p>
+                            <p class="card-text text-muted">Catat pemasukan &amp; pengeluaran</p>
                         </div>
                     </div>
                 </a>
             </div>
+
+            {# Ingredients — admin only #}
             <div class="col-md-6">
                 <a href="/ingredients" class="text-decoration-none">
                     <div class="card h-100 p-3">
@@ -51,17 +68,32 @@
                     </div>
                 </a>
             </div>
+
+            {# Reports — admin only #}
             <div class="col-md-6">
                 <a href="/reports" class="text-decoration-none">
                     <div class="card h-100 p-3">
                         <div class="card-body text-center">
                             <img src="/static/reports.png" height="32" class="mb-3">
                             <h5 class="card-title">Laporan</h5>
-                            <p class="card-text text-muted">Ringkasan & grafik penjualan</p>
+                            <p class="card-text text-muted">Ringkasan &amp; grafik penjualan</p>
                         </div>
                     </div>
                 </a>
             </div>
+
+            {# User Management — admin only #}
+            <div class="col-md-12">
+                <a href="/admin/users" class="text-decoration-none">
+                    <div class="card h-100 p-3">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">👥 Manajemen User</h5>
+                            <p class="card-text text-muted">Kelola akun &amp; hak akses pengguna</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

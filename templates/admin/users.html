@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Manajemen User — projectCatalyst{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>👥 Manajemen User</h1>
+    <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#addUserForm">
+        + Tambah User
+    </button>
+</div>
+
+{# ── Add User Form ── #}
+<div class="collapse mb-4" id="addUserForm">
+    <div class="card">
+        <div class="card-header fw-semibold">Buat Akun Baru</div>
+        <div class="card-body">
+            <form action="/admin/users/add" method="POST">
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" required autocomplete="off">
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required autocomplete="new-password">
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Role</label>
+                        <select name="role" class="form-select">
+                            <option value="user">User (Staff)</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success mt-3">Buat Akun</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ── User List Table ── #}
+{% if users %}
+<div class="card">
+    <div class="card-header fw-semibold">Daftar Akun ({{ users | length }} user)</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Dibuat</th>
+                        <th>Ganti Role</th>
+                        <th>Reset Password</th>
+                        <th>Hapus</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr {% if u['id'] == current_user.id %}class="table-info"{% endif %}>
+                        <td>{{ u['id'] }}</td>
+                        <td>
+                            <strong>{{ u['username'] }}</strong>
+                            {% if u['id'] == current_user.id %}
+                            <span class="badge bg-info text-dark ms-1 small">Kamu</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {% if u['role'] == 'admin' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                {{ u['role'] }}
+                            </span>
+                        </td>
+                        <td class="small text-muted">{{ u['created_at'][:10] if u['created_at'] else '-' }}</td>
+
+                        {# Change Role #}
+                        <td>
+                            {% if u['id'] != current_user.id %}
+                            <form action="/admin/users/role/{{ u['id'] }}" method="POST" class="d-flex gap-1">
+                                <select name="role" class="form-select form-select-sm" style="min-width:100px">
+                                    <option value="user" {{ 'selected' if u['role'] == 'user' }}>User</option>
+                                    <option value="admin" {{ 'selected' if u['role'] == 'admin' }}>Admin</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Ubah</button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+
+                        {# Reset Password #}
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#resetPw-{{ u['id'] }}">
+                                Reset
+                            </button>
+                            <div class="collapse mt-2" id="resetPw-{{ u['id'] }}">
+                                <form action="/admin/users/password/{{ u['id'] }}" method="POST" class="d-flex gap-1">
+                                    <input type="password" name="new_password" class="form-control form-control-sm"
+                                           placeholder="Password baru" required autocomplete="new-password"
+                                           style="min-width: 130px">
+                                    <button type="submit" class="btn btn-sm btn-warning">Simpan</button>
+                                </form>
+                            </div>
+                        </td>
+
+                        {# Delete #}
+                        <td>
+                            {% if u['id'] != current_user.id %}
+                            <form action="/admin/users/delete/{{ u['id'] }}" method="POST"
+                                  onsubmit="return confirm('Hapus user {{ u['username'] }}? Ini tidak bisa dibatalkan.')">
+                                <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<p class="text-muted">Belum ada user.</p>
+{% endif %}
+
+{% endblock %}
