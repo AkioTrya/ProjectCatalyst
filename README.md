@@ -1,6 +1,6 @@
 projectCatalyst – Bakery Business Management System
 
-**A full‑stack web app for home bakers – built with love and Flask.**
+**A full‑stack web app for home bakers, small bussiness, and other – built with love and Flask.**
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Flask](https://img.shields.io/badge/Flask-2.3-black)
@@ -9,7 +9,7 @@ projectCatalyst – Bakery Business Management System
 
 ---
 
-Hi, I’m **Akio Trya Charisma** – a gap year student from an SMK networking background, now building my path toward **F1 software development**. After finishing UTBK (April 27), I focused on portfolio projects that solve real problems.
+Hi, I’m **Akio Trya Charisma** – a ex gap year student from an SMK networking background (yes, i got to college now), now building my path toward **F1 Career path**. After finishing UTBK (April 27), I focused on portfolio projects that solve real problems.
 
 My mom is a home baker. I watched her juggle orders, ingredients, and customer messages manually. So I built **projectCatalyst** – my **first fully working, full‑stack web app** – to help her manage the business.
 
@@ -37,8 +37,6 @@ This project is not just code. It’s the catalyst for my engineering journey.
 | Frontend    | HTML5, Jinja2, Bootstrap 5, vanilla JS |
 | Auth        | Flask‑Login (optional future)      |
 | Deployment  | Local (For Now)                    |
-
-
 
 **Future Update**
 -Security related update
